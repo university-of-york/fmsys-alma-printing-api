@@ -1,0 +1,3 @@
+/creds/**
+*.xml
+/tmp_printouts/**
