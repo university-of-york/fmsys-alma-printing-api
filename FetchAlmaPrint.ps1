@@ -12,57 +12,46 @@ param (
   #[Parameter(Mandatory=$true)]
   [string]$printerId,
   [string]$localPrinterName = "EPSON TM-T88III Receipt",
-  [string]$checkInterval = "30",
+  [int]$checkInterval = 30,
   [string]$marginTop = "0.000000",
   [string]$marginBottom = "0.000000",
   [string]$marginLeft = "0.155560",
-  [string]$marginRight = "0.144440"
+  [string]$marginRight = "0.144440",
+  [string]$printStatuses = "PENDING"
 )
 
-function Invoke-Setup {
-    "Script setup"
-    $credspath = ".\creds"
-    If ((Test-Path -Path $credspath) -ne $true) {
-        New-Item -Type 'directory' -Path '.\creds' -Force
-    }
+$apiBaseUrl = -join ("https://api-",$apiRegion,".hosted.exlibrisgroup.com")
 
-    $apikey = read-host "Enter the Ex Libris Alma API key:"
-    $apikey | export-clixml -Path .\creds\apikey.xml -Force
+function Invoke-Setup {
+  "Script setup"
+  $credspath = ".\creds"
+  If ((Test-Path -Path $credspath) -ne $true) {
+      New-Item -Type 'directory' -Path '.\creds' -Force
+  }
+  $apikey = read-host "Enter the Ex Libris Alma API key:"
+  $apikey | export-clixml -Path .\creds\apikey.xml -Force
 }
 
 # . .\FetchAlmaPrint.ps1;Fetch-Printers
 function Fetch-Printers([string]$apiRegion = "eu") {
-  $script:apikey = Import-Clixml -Path .\creds\apikey.xml
-  $apiBaseUrl = -join ("https://api-",$apiRegion,".hosted.exlibrisgroup.com")
-  $apiUrlPath = "/almaws/v1/conf/printers?"
-  $apiUrlParameters = -join ("library=ALL&printout_queue=ALL&name=ALL&code=ALL&limit=10&offset=0&apikey=",$script:apikey)
-  $apiFullUrl = -join ($apiBaseUrl,$apiUrlPath,$apiUrlParameters)
-  $headers = @{
-    'Accept' = 'application/json'
-  }
-  #$apiFullUrl
+  $fetchPrintersApiUrlPath = "/almaws/v1/conf/printers?"
+  $fetchPrintersApiUrlParameters = -join ("library=ALL&printout_queue=ALL&name=ALL&code=ALL&limit=10&offset=0")
+  $fetchPrintersApiFullUrl = -join ($apiBaseUrl,$fetchPrintersApiUrlPath,$fetchPrintersApiUrlParameters)
   # Use grouping operator per https://education.launchcode.org/azure/chapters/powershell-intro/cmdlet-invoke-restmethod.html#grouping-to-access-fields-of-the-json-response
-  (Invoke-RestMethod -Uri $apiFullUrl -Method Get -Headers $headers).printer | Format-Table -Property id, code, name, description
+  (Invoke-RestMethod -Uri $fetchPrintersApiFullUrl -Method Get -Headers $(getHeaders)).printer | Format-Table -Property id, code, name, description
 }
 
-# . .\FetchAlmaPrint.ps1;Fetch-Jobs -printerId "848838010001381" -localPrinterName "EPSON TM-T88III Receipt"
+# . .\FetchAlmaPrint.ps1;Fetch-Jobs -printerId "848838010001381" -localPrinterName "EPSON TM-T88III Receipt" -printStatuses "ALL"
 function Fetch-Jobs ([string]$printerId){
-  $script:apikey = Import-Clixml -Path .\creds\apikey.xml
-  $script:apiBaseUrl = -join ("https://api-",$apiRegion,".hosted.exlibrisgroup.com")
-  $script:apiUrlPath = "/almaws/v1/task-lists/printouts?"
-  $apiUrlParameters = -join ("letter=ALL&status=ALL&printer_id=",$printerId,"&apikey=",$script:apikey)
-  $apiFullUrl = -join ($apiBaseUrl,$apiUrlPath,$apiUrlParameters)
-  $script:headers = @{
-    'Accept' = 'application/json'
-  }
-  "Request URL is " + $apiFullUrl
- 
+  $fetchJobsApiUrlPath = "/almaws/v1/task-lists/printouts?"
+  $fetchJobsApiUrlParameters = -join ("letter=ALL&status=",$printStatuses,"&printer_id=",$printerId)
+  $fetchJobsApiFullUrl = -join ($apiBaseUrl,$fetchJobsApiUrlPath,$fetchJobsApiUrlParameters)
+  "Beginning at $(Get-Date -UFormat "%A %d/%m/%Y %T")"
   $script:RegPath = "HKCU:\Software\Microsoft\Internet Explorer\PageSetup"
-  backupPageSetup 
+  backupPageSetup
 
 while ($true) {
   # Do Page Setup stuff
-
   setPageSetup $marginTop $marginBottom $marginLeft $marginRight
 
   # If the specified printer is not the default, temporarily make it the default
@@ -71,12 +60,11 @@ while ($true) {
     setDefaultPrinter($localPrinterName)
   }
   "Working.."
-  # Use grouping operator per https://education.launchcode.org/azure/chapters/powershell-intro/cmdlet-invoke-restmethod.html#grouping-to-access-fields-of-the-json-response
-  $letterRequest = (Invoke-RestMethod -Uri $apiFullUrl -Method Get -Headers $headers).printout
+  $letterRequest = (Invoke-RestMethod -Uri $fetchJobsApiFullUrl -Method Get -Headers $(getHeaders)).printout
   ForEach($letter in $letterRequest) {
     $ie = new-object -com "InternetExplorer.Application"
     $letterId = $letter.id
-    $letterHtml = $letter.letter     
+    $letterHtml = $letter.letter
     $outputFilename = -Join ("document-",$letterId,".html")
     # Ridiculous hack to get around "The RPC server is unavailable. (Exception from HRESULT: 0x800706BA)" - see https://stackoverflow.com/a/721519/1754517
     "<!-- saved from url=(0016)http://localhost -->`r`n" + $letterHtml | Out-File -FilePath .\tmp_printouts\$outputFilename
@@ -86,7 +74,7 @@ while ($true) {
     Start-Sleep -seconds 3
     $ie.ExecWB(6,2)
     Start-Sleep -seconds 3
-    $ie.quit() 
+    $ie.quit()
     #Done
     markAsPrinted $letterId
   }
@@ -96,16 +84,32 @@ while ($true) {
   if ($correctPrinter -eq $false) {
     setDefaultPrinter($defaultPrinter)
   }
- "Finished..going to sleep for $checkInterval seconds. Press CTRL+C to quit."
- Start-Sleep -seconds $checkInterval
+
+  "Finished..going to sleep for $checkInterval seconds. Press CTRL+C to quit."
+   $i = $checkInterval
+   do {
+    Write-Host -NoNewline "`rRestarting in $i seconds."
+    Start-Sleep -seconds 1
+    $i--
+  } while ($i -gt 0)
+  ""
 }
 
+}
+
+function getHeaders() {
+  $apikey = Import-Clixml -Path .\creds\apikey.xml
+  return $headers = @{
+    'Accept' = 'application/json'
+    'Authorization' = "apikey $apikey"
+    }
 }
 
 function markAsPrinted ([string]$letterId){
-  $apiUrlParameters = -join ("letter=ALL&status=ALL&printout_id=",$letterId,"&op=mark_as_printed&apikey=",$script:apikey)
-  $apiFullUrl = -join ($apiBaseUrl,$apiUrlPath,$apiUrlParameters)
-  $null = Invoke-RestMethod -Uri $apiFullUrl -Method Post -Headers $headers
+  $markAsPrintedApiUrlPath = "/almaws/v1/task-lists/printouts?"
+  $markAsPrintedApiUrlParameters = -join ("letter=ALL&status=ALL&printout_id=",$letterId,"&op=mark_as_printed")
+  $markAsPrintedApiFullUrl = -join ($apiBaseUrl,$markAsPrintedApiUrlPath,$markAsPrintedApiUrlParameters)
+  $null = Invoke-RestMethod -Uri $markAsPrintedApiFullUrl -Method Post -Headers $(getHeaders)
 }
 
 function getDefaultPrinter(){
@@ -117,15 +121,15 @@ function setDefaultPrinter ([string]$printerName){
 }
 
 function backupPageSetup() {
-    # Get PSObject excluding PS properties (this works when the value names collide)
-    Get-Item $RegPath | ForEach-Object {
-        $RegKey = $_
-        $script:PropertyHash = @{}
-        $_.GetValueNames() -replace "^$", "(default)" | ForEach-Object {
-            $script:PropertyHash.$_ = $RegKey.GetValue($_)
-        }
-        $null = New-Object PSObject -Property $script:PropertyHash
-    }
+  # Get PSObject excluding PS properties (this works when the value names collide)
+  Get-Item $RegPath | ForEach-Object {
+      $RegKey = $_
+      $script:PropertyHash = @{}
+      $_.GetValueNames() -replace "^$", "(default)" | ForEach-Object {
+          $script:PropertyHash.$_ = $RegKey.GetValue($_)
+      }
+      $null = New-Object PSObject -Property $script:PropertyHash
+  }
 }
 
 function setPageSetup ([string]$marginTop, [string]$marginBottom, [string]$marginLeft, [string]$marginRight){
@@ -139,19 +143,19 @@ function setPageSetup ([string]$marginTop, [string]$marginBottom, [string]$margi
   Set-ItemProperty -Path $RegPath -Name "footer" -Value "" -Type "String"
 }
 
-function resetPageSetup (){
-    # Delete all properties (as these instances of the properties didn't exist before)
-    Remove-ItemProperty -Path $RegPath -Name "margin_bottom"
-    Remove-ItemProperty -Path $RegPath -Name "margin_top"
-    Remove-ItemProperty -Path $RegPath -Name "margin_left"
-    Remove-ItemProperty -Path $RegPath -Name "margin_right"
-    Remove-ItemProperty -Path $RegPath -Name "header"
-    Remove-ItemProperty -Path $RegPath -Name "footer"
+function resetPageSetup(){
+  # Delete all properties (as these instances of the properties didn't exist before)
+  Remove-ItemProperty -Path $RegPath -Name "margin_bottom"
+  Remove-ItemProperty -Path $RegPath -Name "margin_top"
+  Remove-ItemProperty -Path $RegPath -Name "margin_left"
+  Remove-ItemProperty -Path $RegPath -Name "margin_right"
+  Remove-ItemProperty -Path $RegPath -Name "header"
+  Remove-ItemProperty -Path $RegPath -Name "footer"
 
-    if ($PropertyHash.Count -gt 0 ) {
-    # Restore properties to what they were before
-    $PropertyHash.GetEnumerator() | ForEach-Object{
-        Set-ItemProperty -Path $RegPath -Name $_.key -Value $_.value -Type "String"
-    } 
+  if ($PropertyHash.Count -gt 0 ) {
+  # Restore properties to what they were before
+  $PropertyHash.GetEnumerator() | ForEach-Object{
+      Set-ItemProperty -Path $RegPath -Name $_.key -Value $_.value -Type "String"
   }
+}
 }
