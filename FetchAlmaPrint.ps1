@@ -8,20 +8,13 @@
 
 param (
   # North America = na, Europe = eu (default), Asia Pacific = ap, Canada = ca, China = cn
-  [string]$apiRegion = "eu",
-  #[Parameter(Mandatory=$true)]
-  [string]$printerId,
-  [string]$localPrinterName = "EPSON TM-T88III Receipt",
-  [int]$checkInterval = 30,
-  [string]$marginTop = "0.000000",
-  [string]$marginBottom = "0.000000",
-  [string]$marginLeft = "0.155560",
-  [string]$marginRight = "0.144440",
-  [string]$printStatuses = "PENDING"
+  [string]$apiRegion = "eu"
 )
 
 $apiBaseUrl = -join ("https://api-",$apiRegion,".hosted.exlibrisgroup.com")
+$printoutsApiUrlPath = "/almaws/v1/task-lists/printouts?"
 
+# . .\FetchAlmaPrint.ps1;Invoke-Setup
 function Invoke-Setup {
   "Script setup"
   $credspath = ".\creds"
@@ -33,7 +26,7 @@ function Invoke-Setup {
 }
 
 # . .\FetchAlmaPrint.ps1;Fetch-Printers
-function Fetch-Printers([string]$apiRegion = "eu") {
+function Fetch-Printers {
   $fetchPrintersApiUrlPath = "/almaws/v1/conf/printers?"
   $fetchPrintersApiUrlParameters = -join ("library=ALL&printout_queue=ALL&name=ALL&code=ALL&limit=10&offset=0")
   $fetchPrintersApiFullUrl = -join ($apiBaseUrl,$fetchPrintersApiUrlPath,$fetchPrintersApiUrlParameters)
@@ -42,10 +35,28 @@ function Fetch-Printers([string]$apiRegion = "eu") {
 }
 
 # . .\FetchAlmaPrint.ps1;Fetch-Jobs -printerId "848838010001381" -localPrinterName "EPSON TM-T88III Receipt" -printStatuses "ALL"
-function Fetch-Jobs ([string]$printerId){
-  $fetchJobsApiUrlPath = "/almaws/v1/task-lists/printouts?"
+function Fetch-Jobs(
+  [parameter(mandatory)] [string]$printerId,
+  [string]$localPrinterName = "EPSON TM-T88III Receipt",
+  [int]$checkInterval = 30,
+  [string]$marginTop = "0.000000",
+  [string]$marginBottom = "0.000000",
+  [string]$marginLeft = "0.155560",
+  [string]$marginRight = "0.144440",
+  [string]$printStatuses = "PENDING") {
+
+  if (-Not (Get-Printer $localPrinterName -ErrorAction SilentlyContinue)) {
+    Write-Host "The printer specified was not found" -ForegroundColor red
+    return
+  }
+
+  if (-not (Test-Path .\creds\apikey.xml)) {
+    Write-Host "The creds file doesn't exist" -ForegroundColor red
+    return
+  }
+
   $fetchJobsApiUrlParameters = -join ("letter=ALL&status=",$printStatuses,"&printer_id=",$printerId)
-  $fetchJobsApiFullUrl = -join ($apiBaseUrl,$fetchJobsApiUrlPath,$fetchJobsApiUrlParameters)
+  $fetchJobsApiFullUrl = -join ($apiBaseUrl,$printoutsApiUrlPath,$fetchJobsApiUrlParameters)
   "Beginning at $(Get-Date -UFormat "%A %d/%m/%Y %T")"
   $script:RegPath = "HKCU:\Software\Microsoft\Internet Explorer\PageSetup"
   backupPageSetup
@@ -93,11 +104,11 @@ while ($true) {
     $i--
   } while ($i -gt 0)
   ""
+  }
 }
 
-}
 
-function getHeaders() {
+function getHeaders {
   $apikey = Import-Clixml -Path .\creds\apikey.xml
   return $headers = @{
     'Accept' = 'application/json'
@@ -106,13 +117,12 @@ function getHeaders() {
 }
 
 function markAsPrinted ([string]$letterId){
-  $markAsPrintedApiUrlPath = "/almaws/v1/task-lists/printouts?"
   $markAsPrintedApiUrlParameters = -join ("letter=ALL&status=ALL&printout_id=",$letterId,"&op=mark_as_printed")
-  $markAsPrintedApiFullUrl = -join ($apiBaseUrl,$markAsPrintedApiUrlPath,$markAsPrintedApiUrlParameters)
+  $markAsPrintedApiFullUrl = -join ($apiBaseUrl,$printoutsApiUrlPath,$markAsPrintedApiUrlParameters)
   $null = Invoke-RestMethod -Uri $markAsPrintedApiFullUrl -Method Post -Headers $(getHeaders)
 }
 
-function getDefaultPrinter(){
+function getDefaultPrinter {
     $script:defaultPrinter = Get-WmiObject -Query "SELECT * FROM Win32_Printer WHERE Default=$true" | select object -ExpandProperty Name
 }
 
@@ -120,7 +130,7 @@ function setDefaultPrinter ([string]$printerName){
     $null = (Get-WmiObject -Class Win32_Printer -Filter "Name='$printerName'").SetDefaultPrinter()
 }
 
-function backupPageSetup() {
+function backupPageSetup {
   # Get PSObject excluding PS properties (this works when the value names collide)
   Get-Item $RegPath | ForEach-Object {
       $RegKey = $_
@@ -143,7 +153,7 @@ function setPageSetup ([string]$marginTop, [string]$marginBottom, [string]$margi
   Set-ItemProperty -Path $RegPath -Name "footer" -Value "" -Type "String"
 }
 
-function resetPageSetup(){
+function resetPageSetup {
   # Delete all properties (as these instances of the properties didn't exist before)
   Remove-ItemProperty -Path $RegPath -Name "margin_bottom"
   Remove-ItemProperty -Path $RegPath -Name "margin_top"
