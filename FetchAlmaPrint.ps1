@@ -45,7 +45,7 @@ function Fetch-Jobs(
   [string]$marginRight = "0.144440",
   [string]$printStatuses = "PENDING") {
 
-  if (-Not (Get-Printer $localPrinterName -ErrorAction SilentlyContinue)) {
+  if ($localPrinterName -ne (Get-WmiObject -Class Win32_Printer -Filter "Name='$localPrinterName'").Name) {
     Write-Host "The printer specified was not found" -ForegroundColor red
     return
   }
