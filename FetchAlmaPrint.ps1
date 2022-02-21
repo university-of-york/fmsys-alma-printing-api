@@ -1,13 +1,12 @@
 #Requires -Version 3.0
 #
-# Before first run you need to run set-up function to save API keys, creds etc
-# Run
-# set-location <script-dir>
-# . .\FetchAlmaPrint.ps1
-# Invoke-Setup
+# The first thing to do is to perform the one-time step of saving your API key to a file for ongoing use.
+# Enter:
+# Set-Location <script-dir>
+# . .\FetchAlmaPrint.ps1;Invoke-Setup
 
 param (
-  # North America = na, Europe = eu (default), Asia Pacific = ap, Canada = ca, China = cn
+  # North America = na, Europe = eu (default), Asia Pacific = ap, Canada = ca, China = cn ( . .\FetchAlmaPrint.ps1 -apiRegion "na" )
   [string]$apiRegion = "eu"
 )
 
@@ -17,12 +16,12 @@ $printoutsApiUrlPath = "/almaws/v1/task-lists/printouts?"
 # . .\FetchAlmaPrint.ps1;Invoke-Setup
 function Invoke-Setup {
   "Script setup"
-  $credspath = "$PSScriptRoot\creds"
-  If ((Test-Path -Path $credspath) -ne $true) {
-      $null = New-Item -Type 'directory' -Path "$PSScriptRoot\creds" -Force
+  $apiKeysPath = "$PSScriptRoot\apiKeys"
+  If ((Test-Path -Path $apiKeysPath) -ne $true) {
+      $null = New-Item -Type 'directory' -Path "$PSScriptRoot\apiKeys" -Force
   }
   $apikey = read-host "Enter the Ex Libris Alma API key:"
-  $apikey | export-clixml -Path "$PSScriptRoot\creds\apikey.xml" -Force
+  $apikey | export-clixml -Path "$PSScriptRoot\apiKeys\apikey.xml" -Force
 }
 
 # . .\FetchAlmaPrint.ps1;Fetch-Printers
@@ -50,8 +49,8 @@ function Fetch-Jobs(
     return
   }
 
-  if (-not (Test-Path "$PSScriptRoot\creds\apikey.xml")) {
-    Write-Host "The creds file doesn't exist" -ForegroundColor red
+  if (-not (Test-Path "$PSScriptRoot\apiKeys\apikey.xml")) {
+    Write-Host "The apikey.xml file doesn't exist" -ForegroundColor red
     return
   }
 
@@ -107,9 +106,8 @@ while ($true) {
   }
 }
 
-
 function getHeaders {
-  $apikey = Import-Clixml -Path "$PSScriptRoot\creds\apikey.xml"
+  $apikey = Import-Clixml -Path "$PSScriptRoot\apiKeys\apikey.xml"
   return $headers = @{
     'Accept' = 'application/json'
     'Authorization' = "apikey $apikey"
@@ -163,9 +161,9 @@ function resetPageSetup {
   Remove-ItemProperty -Path $RegPath -Name "footer"
 
   if ($PropertyHash.Count -gt 0 ) {
-  # Restore properties to what they were before
-  $PropertyHash.GetEnumerator() | ForEach-Object{
-      Set-ItemProperty -Path $RegPath -Name $_.key -Value $_.value -Type "String"
+    # Restore properties to what they were before
+    $PropertyHash.GetEnumerator() | ForEach-Object {
+        Set-ItemProperty -Path $RegPath -Name $_.key -Value $_.value -Type "String"
+    }
   }
-}
 }
