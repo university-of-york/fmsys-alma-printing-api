@@ -17,12 +17,12 @@ $printoutsApiUrlPath = "/almaws/v1/task-lists/printouts?"
 # . .\FetchAlmaPrint.ps1;Invoke-Setup
 function Invoke-Setup {
   "Script setup"
-  $credspath = ".\creds"
+  $credspath = "$PSScriptRoot\creds"
   If ((Test-Path -Path $credspath) -ne $true) {
-      New-Item -Type 'directory' -Path '.\creds' -Force
+      $null = New-Item -Type 'directory' -Path "$PSScriptRoot\creds" -Force
   }
   $apikey = read-host "Enter the Ex Libris Alma API key:"
-  $apikey | export-clixml -Path .\creds\apikey.xml -Force
+  $apikey | export-clixml -Path "$PSScriptRoot\creds\apikey.xml" -Force
 }
 
 # . .\FetchAlmaPrint.ps1;Fetch-Printers
@@ -50,7 +50,7 @@ function Fetch-Jobs(
     return
   }
 
-  if (-not (Test-Path .\creds\apikey.xml)) {
+  if (-not (Test-Path "$PSScriptRoot\creds\apikey.xml")) {
     Write-Host "The creds file doesn't exist" -ForegroundColor red
     return
   }
@@ -109,7 +109,7 @@ while ($true) {
 
 
 function getHeaders {
-  $apikey = Import-Clixml -Path .\creds\apikey.xml
+  $apikey = Import-Clixml -Path "$PSScriptRoot\creds\apikey.xml"
   return $headers = @{
     'Accept' = 'application/json'
     'Authorization' = "apikey $apikey"
