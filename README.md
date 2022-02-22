@@ -57,3 +57,15 @@ By default, the script will only fetch printouts that have the Alma printout sta
 * It would also be good to see if this script could be made into a Windows service, perhaps using `srvany` or [NSSM](https://nssm.cc/). Currently some `.cmd` files are provided as launchers. Such files can be put in the `shell:startup` directory so that the print queue checking is invoked immediately upon logon.
 * Document all parameters in this README!
 * It might be possible to avoid saving the HTML content to a file on disk by using [a technique like this one](https://stackoverflow.com/a/30642231). However, it's probably a useful contingency having the HTML persisted to disk in case re-prints are required, or — as mentioned in the previous section — if there is a problem printing the document.
+
+#### Additional notes
+
+Because the script relies upon Internet Explorer for rendering & printing the HTML, it is likely you'll see the following first-run box:
+
+![An image of the Internet Explorer 11 first-run box](./extras/IE11_First_Run_Image.png?raw=true)
+
+To prevent this box from reappearing, a helper script is provided. Perform the following one-time step in an elevated Powershell window:
+```
+Set-Location extras
+.\DisableFirstRunIE.ps1
+```
