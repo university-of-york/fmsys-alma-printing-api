@@ -50,14 +50,6 @@ Rendering and printing the HTML is achieved using an Internet Explorer COM objec
 
 By default, the script will only fetch printouts that have the Alma printout status `Pending`. Once the printout has been printed, the script changes the status to `Printed`. There is a `Fetch-Jobs` function parameter `-printStatuses` that can be added, which can be used to fetch printouts with other statuses (`Printed`, `Pending`, `Canceled`, `ALL`). For example, `-printStatuses "Canceled"`
 
-#### Future improvements
-
-* Currently, if the script is interrupted while it is `Working..`, say by pressing `CTRL+C`, there's a chance that the original default printer and `Page Setup` settings as mentioned previously won't be restored. It might be possible to improve this by using `Try`,`Catch`,`Finally` [as indicated here](https://stackoverflow.com/a/15788979/1754517).
-* The limitations of using Internet Explorer for printing could be overcome by using a third-party HTML rendering/printing tool [like this one](https://github.com/kendallb/PrintHtml). But sadly, having tested it, it doesn't cope with `Roll Paper 80 x 297 mm` paper size. Another option would be to pay for [Bersoft HTMLPrint](https://www.bersoft.com/htmlprint/), which would very likely work. Moving away from IE is probably a good thing, as [the availability of its COM object is in some doubt](https://techcommunity.microsoft.com/t5/windows-it-pro-blog/internet-explorer-11-desktop-app-retirement-faq/ba-p/2366549), following the annoucement of IE11's retirement, 15 June 2022.
-* It would also be good to see if this script could be made into a Windows service, perhaps using `srvany` or [NSSM](https://nssm.cc/). Currently some `.cmd` files are provided as launchers. Such files can be put in the `shell:startup` directory so that the print queue checking is invoked immediately upon logon.
-* Document all parameters in this README!
-* It might be possible to avoid saving the HTML content to a file on disk by using [a technique like this one](https://stackoverflow.com/a/30642231). However, it's probably a useful contingency having the HTML persisted to disk in case re-prints are required, or — as mentioned in the previous section — if there is a problem printing the document.
-
 #### Additional notes
 
 Because the script relies upon Internet Explorer for rendering & printing the HTML, it is likely you'll see the following first-run box:
@@ -69,3 +61,12 @@ To prevent this box from reappearing, a helper script is provided. Perform the f
 Set-Location extras
 .\DisableFirstRunIE.ps1
 ```
+
+#### Future improvements
+
+* Currently, if the script is interrupted while it is `Working..`, say by pressing `CTRL+C`, there's a chance that the original default printer and `Page Setup` settings as mentioned previously won't be restored. It might be possible to improve this by using `Try`,`Catch`,`Finally` [as indicated here](https://stackoverflow.com/a/15788979/1754517).
+* The limitations of using Internet Explorer for printing could be overcome by using a third-party HTML rendering/printing tool [like this one](https://github.com/kendallb/PrintHtml). But sadly, having tested it, it doesn't cope with `Roll Paper 80 x 297 mm` paper size. Another option would be to pay for [Bersoft HTMLPrint](https://www.bersoft.com/htmlprint/), which would very likely work. Moving away from IE is probably a good thing, as [the availability of its COM object is in some doubt](https://techcommunity.microsoft.com/t5/windows-it-pro-blog/internet-explorer-11-desktop-app-retirement-faq/ba-p/2366549), following the annoucement of IE11's retirement, 15 June 2022.
+* It would also be good to see if this script could be made into a Windows service, perhaps using `srvany` or [NSSM](https://nssm.cc/). Currently some `.cmd` files are provided as launchers. Such files can be put in the `shell:startup` directory so that the print queue checking is invoked immediately upon logon.
+* Document all parameters in this README!
+* It might be possible to avoid saving the HTML content to a file on disk by using [a technique like this one](https://stackoverflow.com/a/30642231). However, it's probably a useful contingency having the HTML persisted to disk in case re-prints are required, or — as mentioned in the previous section — if there is a problem printing the document.
+* To protect against a possible API endpoint security compromise, it would be a good idea to sanitise the HTML letter content before "opening" it, as is effectively done with `$ie.Navigate($printOut)`. The idea would be that this would protect against e.g. malicious `<script></script>` code from running, if the perpetrator managed to inject this into the HTML. Thought needs to be given to the most suitable & effective way to do this, be it via the Internet Explorer zone-based security controls in `Internet options`, using an allow-list of HTML tags akin to [htmlpurifier](http://htmlpurifier.org), or some other method.
