@@ -4,10 +4,13 @@
 $keyPath = 'Registry::HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Internet Explorer\Main'
 $valueName = 'DisableFirstRunCustomize'
 $valueData = 1
+$valueEval = (Get-ItemProperty -Path $keyPath -ErrorAction SilentlyContinue).$valueName
 if (!(Test-Path $keyPath)) {
   "Creating subkey(s)"
   $null = New-Item $keyPath -Force
 }
-"Creating $valueName value"
-Set-ItemProperty -Path $keyPath -Name $valueName -Value $valueData
+if ($valueEval -ne $valueData) {
+  "Creating $valueName with value $valueData"
+  Set-ItemProperty -Path $keyPath -Name $valueName -Value $valueData
+}
 "Done"
