@@ -12,6 +12,7 @@ param (
 
 $apiBaseUrl = -join ("https://api-",$apiRegion,".hosted.exlibrisgroup.com")
 $printoutsApiUrlPath = "/almaws/v1/task-lists/printouts?"
+$tmpPrintoutsPath = "$PSScriptRoot\tmp_printouts"
 
 # . .\FetchAlmaPrint.ps1;Invoke-Setup
 function Invoke-Setup {
@@ -22,6 +23,9 @@ function Invoke-Setup {
   }
   $apikey = read-host "Enter the Ex Libris Alma API key"
   $apikey | export-clixml -Path "$PSScriptRoot\auth\apikey.xml" -Force
+  If ((Test-Path -Path $tmpPrintoutsPath) -ne $true) {
+      $null = New-Item -Type 'directory' -Path $tmpPrintoutsPath -Force
+  }
 }
 
 # . .\FetchAlmaPrint.ps1;Fetch-Printers
@@ -76,9 +80,9 @@ while ($true) {
     $letterId = $letter.id
     $letterHtml = $letter.letter
     $outputFilename = -Join ("document-",$letterId,".html")
+    $printOut = -Join ($tmpPrintoutsPath,'\',$outputFilename)
     # Ridiculous hack to get around "The RPC server is unavailable. (Exception from HRESULT: 0x800706BA)" - see https://stackoverflow.com/a/721519/1754517
-    "<!-- saved from url=(0016)http://localhost -->`r`n" + $letterHtml | Out-File -FilePath .\tmp_printouts\$outputFilename
-    $printOut = -Join ($PSScriptRoot,"\tmp_printouts\",$outputFilename)
+    "<!-- saved from url=(0016)http://localhost -->`r`n" + $letterHtml | Out-File -FilePath "$printOut"
       # Begin printing
     $ie.Navigate($printOut)
     Start-Sleep -seconds 3
