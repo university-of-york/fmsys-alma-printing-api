@@ -83,13 +83,13 @@ while ($true) {
     $printOut = -Join ($tmpPrintoutsPath,'\',$outputFilename)
     # Ridiculous hack to get around "The RPC server is unavailable. (Exception from HRESULT: 0x800706BA)" - see https://stackoverflow.com/a/721519/1754517
     "<!-- saved from url=(0016)http://localhost -->`r`n" + $letterHtml | Out-File -FilePath "$printOut"
-      # Begin printing
+    # Begin printing
     $ie.Navigate($printOut)
     Start-Sleep -seconds 3
     $ie.ExecWB(6,2)
     Start-Sleep -seconds 3
     $ie.quit()
-    #Done
+    # Done
     markAsPrinted $letterId
   }
 
