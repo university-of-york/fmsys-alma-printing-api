@@ -13,16 +13,16 @@ param (
 $apiBaseUrl = -join ("https://api-",$apiRegion,".hosted.exlibrisgroup.com")
 $printoutsApiUrlPath = "/almaws/v1/task-lists/printouts?"
 $tmpPrintoutsPath = "$PSScriptRoot\tmp_printouts"
+$apiKeysPath = "$PSScriptRoot\auth"
 
 # . .\FetchAlmaPrint.ps1;Invoke-Setup
 function Invoke-Setup {
   "Script setup"
-  $apiKeysPath = "$PSScriptRoot\auth"
   If ((Test-Path -Path $apiKeysPath) -ne $true) {
-      $null = New-Item -Type 'directory' -Path "$PSScriptRoot\auth" -Force
+      $null = New-Item -Type 'directory' -Path "$apiKeysPath" -Force
   }
   $apikey = read-host "Enter the Ex Libris Alma API key"
-  $apikey | export-clixml -Path "$PSScriptRoot\auth\apikey.xml" -Force
+  $apikey | export-clixml -Path "$apiKeysPath\apikey.xml" -Force
   If ((Test-Path -Path $tmpPrintoutsPath) -ne $true) {
       $null = New-Item -Type 'directory' -Path $tmpPrintoutsPath -Force
   }
@@ -53,7 +53,7 @@ function Fetch-Jobs(
     return
   }
 
-  if (-not (Test-Path "$PSScriptRoot\auth\apikey.xml")) {
+  if (-not (Test-Path "$apiKeysPath\apikey.xml")) {
     Write-Host "The apikey.xml file doesn't exist" -ForegroundColor red
     return
   }
@@ -111,7 +111,7 @@ while ($true) {
 }
 
 function getHeaders {
-  $apikey = Import-Clixml -Path "$PSScriptRoot\auth\apikey.xml"
+  $apikey = Import-Clixml -Path "$apiKeysPath\apikey.xml"
   return $headers = @{
     'Accept' = 'application/json'
     'Authorization' = "apikey $apikey"
