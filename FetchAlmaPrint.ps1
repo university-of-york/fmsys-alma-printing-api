@@ -34,7 +34,14 @@ function Fetch-Printers {
   $fetchPrintersApiUrlParameters = -join ("library=ALL&printout_queue=ALL&name=ALL&code=ALL&limit=100&offset=0")
   $fetchPrintersApiFullUrl = -join ($apiBaseUrl,$fetchPrintersApiUrlPath,$fetchPrintersApiUrlParameters)
   # Use grouping operator per https://education.launchcode.org/azure/chapters/powershell-intro/cmdlet-invoke-restmethod.html#grouping-to-access-fields-of-the-json-response
-  (Invoke-RestMethod -Uri $fetchPrintersApiFullUrl -Method Get -Headers (getHeaders)).printer | Format-Table -Property id, code, name, description
+  (Invoke-RestMethod -Uri $fetchPrintersApiFullUrl -Method Get -Headers (getHeaders)).printer | Format-Table `
+  @{N='ID';E={ $_.id };width=20}, `
+  @{N='Code';E={ $_.code };width=10}, `
+  @{N='Name';E={ $_.name };width=30}, `
+  @{N='Description';E={$_.description};width=40}, `
+  @{N='Email';E={ $_.email };width=25}, `
+  @{N='Queue';E={ $_.printout_queue };width=5}, `
+  @{N='Library';E={ $_.library.desc };width=30}
 }
 
 # . .\FetchAlmaPrint.ps1;Fetch-Jobs -printerId "848838010001381" -localPrinterName "EPSON TM-T88III Receipt" -printStatuses "ALL"
