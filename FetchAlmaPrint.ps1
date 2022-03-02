@@ -31,7 +31,7 @@ function Invoke-Setup {
 # . .\FetchAlmaPrint.ps1;Fetch-Printers
 function Fetch-Printers {
   $fetchPrintersApiUrlPath = "/almaws/v1/conf/printers?"
-  $fetchPrintersApiUrlParameters = -join ("library=ALL&printout_queue=ALL&name=ALL&code=ALL&limit=10&offset=0")
+  $fetchPrintersApiUrlParameters = -join ("library=ALL&printout_queue=ALL&name=ALL&code=ALL&limit=100&offset=0")
   $fetchPrintersApiFullUrl = -join ($apiBaseUrl,$fetchPrintersApiUrlPath,$fetchPrintersApiUrlParameters)
   # Use grouping operator per https://education.launchcode.org/azure/chapters/powershell-intro/cmdlet-invoke-restmethod.html#grouping-to-access-fields-of-the-json-response
   (Invoke-RestMethod -Uri $fetchPrintersApiFullUrl -Method Get -Headers (getHeaders)).printer | Format-Table -Property id, code, name, description
