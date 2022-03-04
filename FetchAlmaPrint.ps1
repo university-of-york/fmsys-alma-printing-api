@@ -65,6 +65,16 @@ function Fetch-Jobs(
     return
   }
 
+  # To avoid 'The RPC server is unavailable. (Exception from HRESULT: 0x800706BA)' errors, enable IE Protected Mode for the 'Local Intranet' zone
+  # See https://www.reddit.com/r/PowerShell/comments/2rsr8b/automating_ie_getting_strange_behaviour_when/
+  $protectedModeKeyPath = 'Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Zones\1'
+  $protectedModeValueName = '2500'
+  $protectedModeValueData = 0
+  $protectedModeValueEval = (Get-ItemProperty -Path $protectedModeKeyPath -ErrorAction SilentlyContinue).$protectedModeValueName
+  if ($protectedModeValueEval -ne $protectedModeValueData) {
+    Set-ItemProperty -Path $protectedModeKeyPath -Name $protectedModeValueName -Value $protectedModeValueData
+  }
+
   $fetchJobsApiUrlParameters = -join ("letter=ALL&status=",$printStatuses,"&printer_id=",$printerId)
   $fetchJobsApiFullUrl = -join ($apiBaseUrl,$printoutsApiUrlPath,$fetchJobsApiUrlParameters)
   "Beginning at $(Get-Date -UFormat "%A %d/%m/%Y %T")"
