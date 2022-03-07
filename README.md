@@ -88,6 +88,7 @@ Lastly, reboot the PC to check that the script is starting normally.
 
 ###### Notes
 
+- A script `DeployShortcuts.ps1` has been added to the `extras` subfolder, to make it easier to deploy to production environments. It scripts the above steps. Run as Administrator.
 - If the script _flashes by_, i.e. errors appear, but the Powershell window closes too quickly to see what caused it, try temporarily adding the `-NoExit` Powershell option to the shortcut target.
 - Note the `Start-Sleep 30;` bit. It was noted that if the script starts too quickly after logging in, then you might see errors. This ensures a delay before starting the queue checking.
 - If you're wondering why step 8 is required i.e. why we don't embed the parameters directly in the shortcut, this is because there is a 260 character length limit on shortcuts' `Target` field, and this will very likely be exceeded by including additional parameters.
