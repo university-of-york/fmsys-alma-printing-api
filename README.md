@@ -50,45 +50,47 @@ Rendering and printing the HTML is achieved using an Internet Explorer COM objec
 
 By default, the script will only fetch printouts that have the Alma printout status `Pending`. Once the printout has been printed, the script changes the status to `Printed`. There is a `Fetch-Jobs` function parameter `-printStatuses` that can be added, which can be used to fetch printouts with other statuses (`Printed`, `Pending`, `Canceled`, `ALL`). For example, `-printStatuses "Canceled"`
 
-###### Deployment
+#### Deployment
 In a production environment, it is recommended that two identical script shortcut (`.lnk`) files are created. These should be put in the `shell:startup` & `shell:desktop` directories. The shortcut in `shell:startup` ensures the script runs automatically upon logon, and the shortcut in `shell:desktop` provides an option to manually invoke the script, if the Powershell window was accidentally closed. The script will run minimised, so as to run discretely in the background, lessening the chance of an operator accidentally closing the window.
 
 To create the shortcuts, take the following steps:
 
 1. Assuming this repo is in `C:\fmsys-alma-printing-api`, create a new shortcut in this folder:
- 1. In File explorer, right-click in the whitespace and from the menu left-click `New` > `Shortcut`
- 2. In the resulting wizard, enter `powershell` for the location of the item. Click the `Next` button
- 3. In the next screen, give the shortcut a suitable name like `Alma Slip Printing`. Click the `Finish` button
+   1. In File explorer, right-click in the whitespace, and from the menu left-click `New` > `Shortcut`
+   2. In the resulting wizard, enter `powershell` for the location of the item. Click the `Next` button
+   3. In the next screen, give the shortcut a suitable name like `Alma Slip Printing`. Click the `Finish` button
 
 
 2. Now make some modifications to your new shortcut file
- 1. Right-click the shortcut file, and from the menu left-click `Properties`
- 2. In the `Shortcut` tab of the resulting dialogue, edit the following fields:
+   1. Right-click the shortcut file, and from the menu left-click `Properties`
+   2. In the `Shortcut` tab of the resulting dialogue, edit the following fields:
 
 Target: `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoLogo -Command %ALMA_PRINTING_CMD%`  
 Start in: `C:\fmsys-alma-printing-api`  
 Run: `Minimized`  
 
-3. Click the `OK` button to save these changes. Your shortcut is now ready for deployment.
+3. Click the `OK` button to save these changes.
 4. In the Windows `Run` app, enter `shell:common startup`. Explorer will open the startup folder.
 5. Move your shortcut from `C:\fmsys-alma-printing-api` to this folder (_admin rights required_)
 6. In the Windows `Run` app, enter `shell:common desktop`. Explorer will open the desktop folder
 7. From `shell:common startup`, copy your shortcut to the `shell:common desktop` folder (_admin rights required_)
 8. Add a new System environment variable (_admin rights required_):
- 1. In the Windows `Run` app, enter `rundll32 sysdm.cpl,EditEnvironmentVariables` and `CTRL+SHIFT`click the `OK` button to run the aforementioned elevated
- 2. In the lower pane add a new System environment variable by clicking the `New` button and then adding the following:
- 3. Variable name: `ALMA_PRINTING_CMD`, Variable value:
+   1. In the Windows `Run` app, enter `rundll32 sysdm.cpl,EditEnvironmentVariables` and `CTRL+SHIFT`click the `OK` button to run the aforementioned elevated
+   2. In the lower pane add a new System environment variable by clicking the `New` button and then adding the following:
+   3. Variable name: `ALMA_PRINTING_CMD`, Variable value:
 
 
  ```
  "& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '<printerId>' -localPrinterName '<printerName>' }"
  ```
 
-Lastly, reboot the PC to check that the script is starting normally. If the script _flashes by_ and you're having difficulty troubleshooting why, adding the `-NoExit` Powershell option to the shortcut target can help.
+Lastly, reboot the PC to check that the script is starting normally.
 
-Note the `Start-Sleep 30;` bit. It was noted that if the script starts too quickly after logging in, then you might see errors. This ensures a delay before starting the queue checking.
+###### Notes
 
-If you're wondering why step 8 is required i.e. why we don't embed the parameters directly in the shortcut, this is because there is a 260 character length limit on shortcuts' `Target` field, and this will very likely be exceeded by including additional parameters.
+- If the script _flashes by_, i.e. errors appear, but the Powershell window closes too quickly to see what caused it, try temporarily adding the `-NoExit` Powershell option to the shortcut target.
+- Note the `Start-Sleep 30;` bit. It was noted that if the script starts too quickly after logging in, then you might see errors. This ensures a delay before starting the queue checking.
+- If you're wondering why step 8 is required i.e. why we don't embed the parameters directly in the shortcut, this is because there is a 260 character length limit on shortcuts' `Target` field, and this will very likely be exceeded by including additional parameters.
 
 A list of UoY `ALMA_PRINTING_CMD` variable values is as follows:
 
