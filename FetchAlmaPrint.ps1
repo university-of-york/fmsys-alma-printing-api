@@ -85,15 +85,18 @@ while ($true) {
   # Do Page Setup stuff
   setPageSetup $marginTop $marginBottom $marginLeft $marginRight
 
-  # If the specified printer is not the default, temporarily make it the default
-  if ($localPrinterName -ne (getDefaultPrinter)) {
-    $correctPrinter = $false
+  $correctPrinter = $false
+  $defaultPrinterChanged = $false
+  # If the specified printer is the default printer, set $correctPrinter to $true
+  if ($localPrinterName -eq (getDefaultPrinter)) {
+    $correctPrinter = $true
   }
   "Working.."
   $letterRequest = (Invoke-RestMethod -Uri $fetchJobsApiFullUrl -Method Get -Headers (getHeaders)).printout
   ForEach($letter in $letterRequest) {
     if ($correctPrinter -eq $false) {
       setDefaultPrinter($localPrinterName)
+      $defaultPrinterChanged = $true
     }
     $ie = new-object -com "InternetExplorer.Application"
     $letterId = $letter.id
@@ -115,7 +118,7 @@ while ($true) {
 
   resetPageSetup
   # Make the original default printer the default again
-  if ($correctPrinter -eq $false) {
+  if ($defaultPrinterChanged -eq $true) {
     setDefaultPrinter($defaultPrinter)
   }
 
