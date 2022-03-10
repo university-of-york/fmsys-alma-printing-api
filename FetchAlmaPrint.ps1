@@ -108,7 +108,7 @@ while ($true) {
     # Begin printing
     $ie.Navigate($printOut)
     Start-Sleep -seconds 3
-    "$(Get-Date -UFormat "%A %d/%m/%Y %T") - printing $printOut"
+    "$(Get-Date -UFormat "%A %d/%m/%Y %T") - printing $outputFilename"
     $ie.ExecWB(6,2)
     Start-Sleep -seconds 3
     $ie.quit()
