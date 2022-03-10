@@ -88,11 +88,13 @@ while ($true) {
   # If the specified printer is not the default, temporarily make it the default
   if ($localPrinterName -ne (getDefaultPrinter)) {
     $correctPrinter = $false
-    setDefaultPrinter($localPrinterName)
   }
   "Working.."
   $letterRequest = (Invoke-RestMethod -Uri $fetchJobsApiFullUrl -Method Get -Headers (getHeaders)).printout
   ForEach($letter in $letterRequest) {
+    if ($correctPrinter -eq $false) {
+      setDefaultPrinter($localPrinterName)
+    }
     $ie = new-object -com "InternetExplorer.Application"
     $letterId = $letter.id
     $letterHtml = $letter.letter
