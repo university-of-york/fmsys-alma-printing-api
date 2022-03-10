@@ -103,6 +103,7 @@ while ($true) {
     # Begin printing
     $ie.Navigate($printOut)
     Start-Sleep -seconds 3
+    "$(Get-Date -UFormat "%A %d/%m/%Y %T") - printing $printOut"
     $ie.ExecWB(6,2)
     Start-Sleep -seconds 3
     $ie.quit()
@@ -138,6 +139,7 @@ function getHeaders {
 function markAsPrinted ([string]$letterId){
   $markAsPrintedApiUrlParameters = -join ("letter=ALL&status=ALL&printout_id=",$letterId,"&op=mark_as_printed")
   $markAsPrintedApiFullUrl = -join ($apiBaseUrl,$printoutsApiUrlPath,$markAsPrintedApiUrlParameters)
+  Write-Information -MessageData "$(Get-Date -UFormat "%A %d/%m/%Y %T") - marking letter ID $letterId as printed" -InformationAction Continue
   $null = Invoke-RestMethod -Uri $markAsPrintedApiFullUrl -Method Post -Headers (getHeaders)
 }
 
