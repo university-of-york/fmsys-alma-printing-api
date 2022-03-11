@@ -102,7 +102,7 @@ function Fetch-Jobs(
       $outputFilename = -Join ("document-",$letterId,".html")
       $printOut = -Join ($tmpPrintoutsPath,'\',$outputFilename)
       # Ridiculous hack to get around "The RPC server is unavailable. (Exception from HRESULT: 0x800706BA)" - see https://stackoverflow.com/a/721519/1754517
-      "<!-- saved from url=(0016)http://localhost -->`r`n" + $letterHtml | Out-File -FilePath "$printOut"
+      "<!-- saved from url=(0016)http://localhost -->`r`n" + $letterHtml | Out-File -Encoding utf8 -FilePath "$printOut"
       # Begin printing
       $ie.Navigate($printOut)
       Start-Sleep -seconds 3
