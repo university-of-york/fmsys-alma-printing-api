@@ -81,55 +81,57 @@ function Fetch-Jobs(
   $script:RegPath = "HKCU:\Software\Microsoft\Internet Explorer\PageSetup"
   backupPageSetup
 
-while ($true) {
-  # Do Page Setup stuff
-  setPageSetup $marginTop $marginBottom $marginLeft $marginRight
-
-  $correctPrinter = $false
-  $defaultPrinterChanged = $false
-  # If the specified printer is the default printer, set $correctPrinter to $true
-  if ($localPrinterName -eq (getDefaultPrinter)) {
-    $correctPrinter = $true
-  }
-  "Working.."
-  $letterRequest = (Invoke-RestMethod -Uri $fetchJobsApiFullUrl -Method Get -Headers (getHeaders)).printout
-  ForEach($letter in $letterRequest) {
-    if ($correctPrinter -eq $false) {
-      setDefaultPrinter($localPrinterName)
-      $defaultPrinterChanged = $true
+  while ($true) {
+    "Checking Online Queue..."
+    $letterResponse = (Invoke-RestMethod -Uri $fetchJobsApiFullUrl -Method Get -Headers (getHeaders)).printout
+    $defaultPrinterChanged = $false
+    if ($letterResponse -ne $null) {
+      # If the specified printer isn't the default printer, make it the default printer
+      if ($localPrinterName -ne (getDefaultPrinter)) {
+        setDefaultPrinter($localPrinterName)
+        $defaultPrinterChanged = $true
+      }
+      # Do Page Setup stuff
+      setPageSetup $marginTop $marginBottom $marginLeft $marginRight
     }
-    $ie = new-object -com "InternetExplorer.Application"
-    $letterId = $letter.id
-    $letterHtml = $letter.letter
-    $outputFilename = -Join ("document-",$letterId,".html")
-    $printOut = -Join ($tmpPrintoutsPath,'\',$outputFilename)
-    # Ridiculous hack to get around "The RPC server is unavailable. (Exception from HRESULT: 0x800706BA)" - see https://stackoverflow.com/a/721519/1754517
-    "<!-- saved from url=(0016)http://localhost -->`r`n" + $letterHtml | Out-File -FilePath "$printOut"
-    # Begin printing
-    $ie.Navigate($printOut)
-    Start-Sleep -seconds 3
-    "$(Get-Date -UFormat "%A %d/%m/%Y %T") - printing $outputFilename"
-    $ie.ExecWB(6,2)
-    Start-Sleep -seconds 3
-    $ie.quit()
-    # Done
-    markAsPrinted $letterId
-  }
 
-  resetPageSetup
-  # Make the original default printer the default again
-  if ($defaultPrinterChanged -eq $true) {
-    setDefaultPrinter($defaultPrinter)
-  }
+    ForEach($letter in $letterResponse) {
+      $ie = new-object -com "InternetExplorer.Application"
+      $letterId = $letter.id
+      $letterHtml = $letter.letter
+      $outputFilename = -Join ("document-",$letterId,".html")
+      $printOut = -Join ($tmpPrintoutsPath,'\',$outputFilename)
+      # Ridiculous hack to get around "The RPC server is unavailable. (Exception from HRESULT: 0x800706BA)" - see https://stackoverflow.com/a/721519/1754517
+      "<!-- saved from url=(0016)http://localhost -->`r`n" + $letterHtml | Out-File -FilePath "$printOut"
+      # Begin printing
+      $ie.Navigate($printOut)
+      Start-Sleep -seconds 3
+      "$(Get-Date -UFormat "%A %d/%m/%Y %T") - printing $outputFilename"
+      $ie.ExecWB(6,2)
+      Start-Sleep -seconds 3
+      $ie.quit()
+      # Done
+      markAsPrinted $letterId
+    }
 
-  "Finished..going to sleep for $checkInterval seconds. Press CTRL+C to quit."
-   $i = $checkInterval
-   do {
-    Write-Host -NoNewline "`rRestarting in $i seconds."
-    Start-Sleep -seconds 1
-    $i--
-  } while ($i -gt 0)
-  ""
+    # Restore the original default printer
+    if ($defaultPrinterChanged -eq $true) {
+      setDefaultPrinter($originalDefaultPrinter)
+    }
+
+    # Restore the margins, etc
+    if ($letterResponse -ne $null) {
+      resetPageSetup
+    }
+
+    "Finished..going to sleep for $checkInterval seconds. Press CTRL+C to quit."
+     $i = $checkInterval
+     do {
+      Write-Host -NoNewline "`rRestarting in $i seconds."
+      Start-Sleep -seconds 1
+      $i--
+    } while ($i -gt 0)
+    ""
   }
 }
 
@@ -149,7 +151,7 @@ function markAsPrinted ([string]$letterId){
 }
 
 function getDefaultPrinter {
-    $script:defaultPrinter = Get-WmiObject -Query "SELECT * FROM Win32_Printer WHERE Default=$true" | select object -ExpandProperty Name
+    $script:originalDefaultPrinter = Get-WmiObject -Query "SELECT * FROM Win32_Printer WHERE Default=$true" | select object -ExpandProperty Name
 }
 
 function setDefaultPrinter ([string]$printerName){
