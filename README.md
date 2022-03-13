@@ -97,7 +97,7 @@ A list of UoY `ALMA_PRINTING_CMD` variable values is as follows:
 
 **Interlending receiving**
 ```
-"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '19195349880001381' -localPrinterName 'PUSH_ITSPRN0705 [Harry Fairhurst - Information Services LFA/ LFA023](Mobility)' -marginTop '0.3' }"
+"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '19195349880001381' -localPrinterName 'PUSH_ITSPRN0705 [Harry Fairhurst - Information Services LFA/ LFA023](Mobility)' -marginTop '0.3' -jpgBarcode 1 }"
 ```
 
 **JBM Holds processing**
@@ -109,6 +109,16 @@ A list of UoY `ALMA_PRINTING_CMD` variable values is as follows:
 ```
 "& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '993537480001381' -localPrinterName 'EPSON TM-T88III Receipt' }"
 ```
+###### Barcode unreadable?
+A problem was identified with the readability of the barcodes when printed using the script. The key points about this problem are:
+- the printed barcodes appeared to be missing their right guard bar
+- when the HTML content is rendered on screen in Internet Explorer, from the files stored in `tmp_printouts`, the guard bar is _not_ missing
+- the Opticon branded scanners in use are incapable of reading the "faulty" printed barcodes, however, they can be read using ones' smartphone
+- the problem is not present when the HTML content is printed from an alternative web browser such as Google Chrome
+- the problem was narrowed down to it being Internet Explorer related, and there is [a very similar sounding problem described here](https://social.technet.microsoft.com/Forums/windows/en-US/9276a5b1-24cf-4973-873c-768068617e79/issue-printing-with-internet-explorer-10-11?forum=ieitprocurrentver), which pinpoints the XPS subsystem (that IE uses for printing) as the root cause
+- after experimentation, it was found that the barcodes could be converted from `PNG` to `JPG` format in order to resolve the readability problem
+
+To provide a solution for this problem, a new `base64Png2Jpg` function was added which converts the base64 PNG data to base64 JPG. This can be used by adding the `Fetch-Jobs` function named parameter `-jpgBarcode`, with its value set to `1`
 
 ###### IE First-Run
 

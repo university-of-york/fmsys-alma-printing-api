@@ -5,6 +5,7 @@ param (
   [string]$apiRegion = "eu"
 )
 
+add-type -assemblyname system.drawing
 $apiBaseUrl = -join ("https://api-",$apiRegion,".hosted.exlibrisgroup.com")
 $printoutsApiUrlPath = "/almaws/v1/task-lists/printouts?"
 $tmpPrintoutsPath = "$PSScriptRoot\tmp_printouts"
@@ -45,7 +46,8 @@ function Fetch-Jobs(
   [string]$marginBottom = "0.000000",
   [string]$marginLeft = "0.155560",
   [string]$marginRight = "0.144440",
-  [string]$printStatuses = "PENDING") {
+  [string]$printStatuses = "PENDING",
+  [bool]$jpgBarcode = $false) {
 
   if ($localPrinterName -ne (Get-WmiObject -Class Win32_Printer -Filter "Name='$localPrinterName'").Name) {
     Write-Host "The printer specified was not found" -ForegroundColor red
@@ -90,7 +92,11 @@ function Fetch-Jobs(
     ForEach($letter in $letterResponse) {
       $ie = new-object -com "InternetExplorer.Application"
       $letterId = $letter.id
-      $letterHtml = $letter.letter
+      if ($jpgBarcode -eq $true) {
+        $letterHtml = base64Png2Jpg $letter.letter
+      } else {
+        $letterHtml = $letter.letter
+      }
       $outputFilename = -Join ("document-",$letterId,".html")
       $printOut = -Join ($tmpPrintoutsPath,'\',$outputFilename)
       # Ridiculous hack to get around "The RPC server is unavailable. (Exception from HRESULT: 0x800706BA)" - see https://stackoverflow.com/a/721519/1754517
@@ -187,5 +193,21 @@ function resetPageSetup {
     $PropertyHash.GetEnumerator() | ForEach-Object {
         Set-ItemProperty -Path $RegPath -Name $_.key -Value $_.value -Type "String"
     }
+  }
+}
+
+function base64Png2Jpg ([string]$html){
+  $pattern = '<td><b>Item Barcode: </b><img src="data:image/.png;base64,([-A-Za-z0-9+/]*={0,3})" alt="Item Barcode"></td>'
+  $base64PngMatchString = $html | Select-String -Pattern $pattern | foreach {$_.matches.groups[1]} | select -expandproperty Value
+  if ($base64PngMatchString -ne $null) {
+    $oMemoryStream = New-Object -TypeName System.IO.MemoryStream
+    $oImgFormat = [System.Drawing.Imaging.ImageFormat]::Jpeg
+    $Image = [Drawing.Bitmap]::FromStream([IO.MemoryStream][Convert]::FromBase64String($base64PngMatchString))
+    $Image.Save($oMemoryStream,$oImgFormat)
+    $cImgBytes = [Byte[]]($oMemoryStream.ToArray())
+    $sBase64 = [System.Convert]::ToBase64String($cImgBytes)
+    return $html.replace('data:image/.png;base64','data:image/.jpg;base64').replace($base64PngMatchString,$sBase64)
+  } else {
+    return $html
   }
 }
