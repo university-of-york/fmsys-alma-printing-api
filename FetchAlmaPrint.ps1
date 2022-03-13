@@ -1,9 +1,4 @@
 #Requires -Version 3.0
-#
-# The first thing to do is to perform the one-time step of saving your API key to a file for ongoing use.
-# Enter:
-# Set-Location <script-dir>
-# . .\FetchAlmaPrint.ps1;Invoke-Setup
 
 param (
   # North America = na, Europe = eu (default), Asia Pacific = ap, Canada = ca, China = cn ( . .\FetchAlmaPrint.ps1 -apiRegion "na" )
@@ -15,7 +10,6 @@ $printoutsApiUrlPath = "/almaws/v1/task-lists/printouts?"
 $tmpPrintoutsPath = "$PSScriptRoot\tmp_printouts"
 $apiKeysPath = "$PSScriptRoot\auth"
 
-# . .\FetchAlmaPrint.ps1;Invoke-Setup
 function Invoke-Setup {
   "Script setup"
   If ((Test-Path -Path $apiKeysPath) -ne $true) {
@@ -28,7 +22,6 @@ function Invoke-Setup {
   }
 }
 
-# . .\FetchAlmaPrint.ps1;Fetch-Printers
 function Fetch-Printers {
   $fetchPrintersApiUrlPath = "/almaws/v1/conf/printers?"
   $fetchPrintersApiUrlParameters = -join ("library=ALL&printout_queue=ALL&name=ALL&code=ALL&limit=100&offset=0")
@@ -44,7 +37,6 @@ function Fetch-Printers {
   @{N='Library';E={ $_.library.desc };width=30}
 }
 
-# . .\FetchAlmaPrint.ps1;Fetch-Jobs -printerId "848838010001381" -localPrinterName "EPSON TM-T88III Receipt" -printStatuses "ALL"
 function Fetch-Jobs(
   [parameter(mandatory)] [string]$printerId,
   [string]$localPrinterName = "EPSON TM-T88III Receipt",
