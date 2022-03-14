@@ -97,7 +97,7 @@ A list of UoY `ALMA_PRINTING_CMD` variable values is as follows:
 
 **Interlending receiving**
 ```
-"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '19195349880001381' -localPrinterName 'PUSH_ITSPRN0705 [Harry Fairhurst - Information Services LFA/ LFA023](Mobility)' -marginTop '0.3' -jpgBarcode 1 }"
+"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '19195349880001381' -localPrinterName 'PUSH_ITSPRN0705 [Harry Fairhurst - Information Services LFA/ LFA023](Mobility)' -marginTop '0.3' -jpgBarcode }"
 ```
 
 **JBM Holds processing**
@@ -118,7 +118,7 @@ A problem was identified with the readability of the barcodes when printed using
 - the problem was narrowed down to it being Internet Explorer related, and there is [a very similar sounding problem described here](https://social.technet.microsoft.com/Forums/windows/en-US/9276a5b1-24cf-4973-873c-768068617e79/issue-printing-with-internet-explorer-10-11?forum=ieitprocurrentver), which pinpoints the XPS subsystem (that IE uses for printing) as the root cause
 - after experimentation, it was found that the barcodes could be converted from `PNG` to `JPG` format in order to resolve the readability problem
 
-To provide a solution for this problem, a new `base64Png2Jpg` function was added which converts the base64 PNG data to base64 JPG. This can be used by adding the `Fetch-Jobs` function named parameter `-jpgBarcode`, with its value set to `1`
+To provide a solution for this problem, a new `base64Png2Jpg` function was added which converts the base64 PNG data to base64 JPG. This can be used by adding the `Fetch-Jobs` function switch parameter `-jpgBarcode`.
 
 ###### IE First-Run
 

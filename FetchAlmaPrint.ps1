@@ -47,7 +47,7 @@ function Fetch-Jobs(
   [string]$marginLeft = "0.155560",
   [string]$marginRight = "0.144440",
   [string]$printStatuses = "PENDING",
-  [bool]$jpgBarcode = $false) {
+  [switch]$jpgBarcode) {
 
   if ($localPrinterName -ne (Get-WmiObject -Class Win32_Printer -Filter "Name='$localPrinterName'").Name) {
     Write-Host "The printer specified was not found" -ForegroundColor red
@@ -92,7 +92,7 @@ function Fetch-Jobs(
     ForEach($letter in $letterResponse) {
       $ie = new-object -com "InternetExplorer.Application"
       $letterId = $letter.id
-      if ($jpgBarcode -eq $true) {
+      if ($jpgBarcode) {
         $letterHtml = base64Png2Jpg $letter.letter
       } else {
         $letterHtml = $letter.letter
