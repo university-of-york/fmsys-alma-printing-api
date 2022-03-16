@@ -59,7 +59,7 @@
   <Actions Context="Author">
     <Exec>
       <Command>C:\Windows\System32\mshta.exe</Command>
-      <Arguments>vbscript:Execute("CreateObject(""Wscript.Shell"").Run ""powershell -NoLogo -Command """"Gci -Filter *.html | Where CreationTime -lt (Get-Date).AddDays(-30) | Del"""""", 0 : window.close")</Arguments>
+      <Arguments>vbscript:Execute("CreateObject(""Wscript.Shell"").Run ""powershell -NoLogo -Command """"Gci -Filter *.html | Where CreationTime -lt (Get-Date).AddDays(-30) | Del # See https://github.com/university-of-york/fmsys-alma-printing-api#tmp_printouts-housekeeping. Contact jea9 for queries"""""", 0 : window.close")</Arguments>
       <WorkingDirectory>C:\fmsys-alma-printing-api\tmp_printouts</WorkingDirectory>
     </Exec>
   </Actions>
