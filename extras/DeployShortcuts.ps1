@@ -1,7 +1,7 @@
 #Requires -RunAsAdministrator
 #Requires -Version 4.0
 $envVariableName = "ALMA_PRINTING_CMD"
-$shortcutFilename = read-host "Please type a shortcut filename"
+$shortcutFilename = read-host "Please type a shortcut filename (note the Powershell window title will carry this name too)"
 $startup=[Environment]::GetFolderPath("CommonStartup")
 $desktop=[Environment]::GetFolderPath("CommonDesktop")
 $WshShell = New-Object -comObject WScript.Shell
@@ -12,5 +12,6 @@ $Shortcut.WorkingDirectory  = $(Get-Item $PSCommandPath ).DirectoryName | Split-
 $Shortcut.WindowStyle = 7
 $Shortcut.Save()
 Copy-Item "$desktop\$shortcutFilename.lnk" -Destination "$startup"
-$envVariableValue = read-host "Paste in your params"
+"The next step is to create the system environment variable $envVariableName"
+$envVariableValue = read-host "Paste in your Powershell -Command value (including the surrounding double-quotes) to populate $envVariableName"
 [Environment]::SetEnvironmentVariable($envVariableName, $envVariableValue, "Machine")
