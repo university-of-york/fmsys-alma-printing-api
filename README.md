@@ -1,6 +1,6 @@
 # Alma Printing With Powershell
 
-#### Preamble
+### Preamble
 In recent years, Ex Libris — the Library systems supplier of the [Alma Library Management System](https://exlibrisgroup.com/products/alma-library-services-platform/) — have made significant improvements to the Alma printing stack. Alma is a web-based, cloud-hosted solution, that until recently relied upon customers' email for printing. Print jobs would be sent by email to a nominated customer Inbox representing the print queue. It would then be up to the customer to process and print the incoming emails, and while this works, this method of printing required some effort on the part of customers to implement a solution, and such solutions (particularly in our case) were fragile and prone to failure.
 
 A few years back Ex Libris introduced two new methods of printing Alma printouts in addition to email. So-called "Quick printing", where the Alma web app passes the print data to the browser, and the browser receives a signal to invoke the browser print dialogue. This is useful for occasional ad hoc printing, and is assumed to have been made possible because of the availability of new printing APIs in modern web browsers. However, this is not useful for printing scenarios where a workflow is involved, because multiple clicks would be required, which would soon add up to an increase in time spent by the operator processing the items. This is where the second improvement made in recent years comes to the fore. The HTML print content can now be fetched via a new Alma Printing API, and [Ex Libris's Alma Print Daemon](https://github.com/ExLibrisGroup/alma-print-daemon) provides a client solution for customers to leverage this improvement. However, the Alma Print Daemon appears to have some downsides:
@@ -11,9 +11,9 @@ A few years back Ex Libris introduced two new methods of printing Alma printouts
 
 This repository is an attempt to address the above downsides, although in its current state it has a few downsides of its own, which are explained later on.
 
-#### What the script does
+### What does the script do?
 
-The Powershell script contained in this repository polls the Alma print queue for new jobs. If it finds any it will send the job to the specified printer and mark the print job as `Printed`.
+The Powershell script contained in this repository polls the Alma print queue for new jobs. If it finds any it will send the job to the specified printer and mark the job as `Printed`.
 
 ![An image of the script in operation](./images/alma_printing_screenshot.png?raw=true)
 
@@ -21,10 +21,10 @@ The intention is that the script runs in the background, with its window minimis
 
 ![An image of the the taskbar icon](./images/alma_printing_taskbar_screenshot.png?raw=true)
 
-#### Prerequisites
+### Prerequisites
 There are tasks that need to be done in the Alma web UI Configuration area, so that the Alma printer is available as an online queue, which are [explained here](https://knowledge.exlibrisgroup.com/Alma/Product_Documentation/010Alma_Online_Help_(English)/030Fulfillment/080Configuring_Fulfillment/020Fulfillment_Infrastructure/Configuring_Printers). For the purposes of running this script you will need to [get an API key](https://developers.exlibrisgroup.com/blog/how-to-set-up-and-use-the-alma-print-daemon/) to use.
 
-#### How do I use the script?
+### How do I use the script?
 
 Once you have an API key, you'll want to make it available for the script to use:
 ```
@@ -48,7 +48,7 @@ The second thing you'll want to do is determine the Alma print queue to monitor:
  ```
 In a production environment, you'll want some way for the script to start itself, and a way for non-technical staff to launch the script if something untoward happens and the running instance needs to be restarted.
 
-#### Deployment
+### Deployment
 In a production environment, it is recommended that two identical script shortcut (`.lnk`) files are created. These should be put in the `shell:startup` & `shell:desktop` directories. The shortcut in `shell:startup` ensures the script runs automatically upon logon, and the shortcut in `shell:desktop` provides an option to manually invoke the script, if the Powershell window was accidentally closed. The script will run minimised, so as to run discretely in the background, lessening the chance of an operator accidentally closing the window. Note that a script, `DeployShortcuts.ps1` is available in the `helper-scripts` subfolder, to make it easier to deploy to production environments. It scripts the manual steps below. Run as Administrator.
 
 To create the shortcuts manually, take the following steps:
@@ -84,15 +84,15 @@ Run: `Minimized`
 
 Lastly, reboot the PC to check that the script is starting normally.
 
-###### Notes
+#### Deployment Tips & Notes
 
 - If the script _flashes by_, i.e. errors appear, but the Powershell window closes too quickly to see what caused it, try temporarily adding the `-NoExit` Powershell option to the shortcut target.
 - Note the `Start-Sleep 30;` at the front of the `ALMA_PRINTING_CMD` variable value. It was noted that if the script starts too quickly after logging in, then you might see errors. This ensures a delay before starting the queue checking.
 - If you're wondering why step 8 is required i.e. why we don't embed the command directly in the shortcut, this is because there is a 260 character length limit on shortcuts' `Target` field, and this will very likely be exceeded by including additional parameters.
 
-###### Barcode unreadable?
+#### Barcode unreadable?
 A problem was identified with the readability of the barcodes when printed using the script. The key points about this problem are:
-- the printed barcodes appeared to be missing their right guard bar
+- the printed barcodes appeared to be missing their right guard bar, which was causing the barcodes to be unreadable when scanned
 - when the HTML content is rendered on screen in Internet Explorer, from the files stored in `tmp_printouts`, the guard bar is _not_ missing
 - the Opticon branded scanners in use are incapable of reading the "faulty" printed barcodes, however, they can be read using ones' smartphone
 - the problem is not present when the HTML content is printed from an alternative web browser such as Google Chrome
@@ -101,7 +101,7 @@ A problem was identified with the readability of the barcodes when printed using
 
 To provide a solution for this problem, a new `base64Png2Jpg` function was added which converts the base64 PNG data to base64 JPG. This can be used by adding the `Fetch-Jobs` function switch parameter `-jpgBarcode`.
 
-###### IE First-Run
+#### IE First-Run
 
 Because the script relies upon Internet Explorer for rendering & printing the HTML, it is likely you'll see the following first-run box:
 
@@ -113,11 +113,11 @@ Set-Location helper-scripts
 .\DisableFirstRunIE.ps1
 ```
 
-###### tmp_printouts housekeeping
+#### tmp_printouts housekeeping
 
 The `tmp_printouts` directory will accumulate many HTML files over time. It's probably a useful contingency having the HTML files persisted to disk in case re-prints are required, or if there is a problem printing the document. However, over time these files may consume a significant amount of disk space, so it's recommended to delete the older ones while keeping the more recent ones. To help automate this housekeeping process, a Task Scheduler XML template is provided which leverages Powershell to delete files older than 30 days. This can be adjusted according to local needs; just edit the XML before importing, or modify the task once imported. See `helper-scripts/fmsys-alma-printing-api - clean tmp_printouts directory.xml`
 
-###### UoY-specific notes
+#### UoY-specific notes
 A list of UoY `ALMA_PRINTING_CMD` variable values is as follows:
 
 **Interlending receiving**
@@ -135,7 +135,7 @@ A list of UoY `ALMA_PRINTING_CMD` variable values is as follows:
 "& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '993537480001381' -localPrinterName 'EPSON TM-T88III Receipt' }"
 ```
 
-#### How does the script work?
+### How does the script work?
 
 The script works by running a loop to check the queue every `X` seconds. The number of seconds can be changed with the `-checkInterval` parameter of the `Fetch-Jobs` function. By default, this is `30` seconds. the communications with Alma's API is achieved with Powershell's `Invoke-RestMethod`.
 
@@ -145,7 +145,7 @@ Rendering and printing the HTML is achieved using an Internet Explorer COM objec
 
 By default, the script will only fetch printouts that have the Alma printout status `Pending`. Once the printout has been printed, the script changes the status to `Printed`. There is a `Fetch-Jobs` function parameter `-printStatuses` that can be added, which can be used to fetch printouts with other statuses (`Printed`, `Pending`, `Canceled`, `ALL`). For example, `-printStatuses "Canceled"`
 
-#### Future improvements
+### Future improvements
 
 * Document all parameters in this README!
 * Currently, if the script is interrupted while it is `Working..`, say by pressing `CTRL+C`, there's a chance that the original default printer and `Page Setup` settings as mentioned previously won't be restored. It might be possible to improve this by using `Try`,`Catch`,`Finally` [as indicated here](https://stackoverflow.com/a/15788979/1754517).
