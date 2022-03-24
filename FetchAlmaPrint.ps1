@@ -189,7 +189,7 @@ function Fetch-Jobs(
 
     # Restore the margins, etc
     if ($letterResponse -ne $null) {
-      resetPageSetup
+      restorePageSetup
     }
 
     "Finished..going to sleep for $checkInterval seconds. Press CTRL+C to quit."
@@ -274,7 +274,7 @@ function setPageSetup ([string]$marginTop, [string]$marginBottom, [string]$margi
   Set-ItemProperty -Path $RegPath -Name "footer" -Value "" -Type "String"
 }
 
-function resetPageSetup {
+function restorePageSetup {
   <#
   .SYNOPSIS
   A function to restore the Page Setup values as they were before printing.
