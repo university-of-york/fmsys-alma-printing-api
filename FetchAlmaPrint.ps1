@@ -78,7 +78,7 @@ function Fetch-Jobs(
   [string]$marginBottom = "0.000000",
   [string]$marginLeft = "0.155560",
   [string]$marginRight = "0.144440",
-  [string]$printStatuses = "PENDING",
+  [string]$printoutsWithStatus = "PENDING",
   [switch]$jpgBarcode) {
   <#
   .SYNOPSIS
@@ -105,7 +105,7 @@ function Fetch-Jobs(
   .PARAMETER marginRight
   This is the marginRight value added to the HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\PageSetup key.
 
-  .PARAMETER printStatuses
+  .PARAMETER printoutsWithStatus
   This determines which of the available statuses of printouts to check for.
   Valid values are:
     Pending (default)
@@ -139,7 +139,7 @@ function Fetch-Jobs(
     Set-ItemProperty -Path $protectedModeKeyPath -Name $protectedModeValueName -Value $protectedModeValueData
   }
 
-  $fetchJobsApiUrlParameters = -join ("letter=ALL&status=",$printStatuses,"&printer_id=",$printerId)
+  $fetchJobsApiUrlParameters = -join ("letter=ALL&status=",$printoutsWithStatus,"&printer_id=",$printerId)
   $fetchJobsApiFullUrl = -join ($apiBaseUrl,$printoutsApiUrlPath,$fetchJobsApiUrlParameters)
   "Beginning at $(Get-Date -UFormat "%A %d/%m/%Y %T")"
   $script:RegPath = "HKCU:\Software\Microsoft\Internet Explorer\PageSetup"

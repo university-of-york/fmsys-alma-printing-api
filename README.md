@@ -143,7 +143,7 @@ The HTML content is saved to a file stored in the `tmp_printouts` subdirectory. 
 
 Rendering and printing the HTML is achieved using an Internet Explorer COM object. This is probably the weakest area of the script; there is currently no way to internally specify which printer to print to, so the script relies upon setting the printer specified by `-localPrinterName` as the Windows default printer while the script runs, restoring the default printer after each run. The script also does something quite similar for the `Page Setup` (margins, etc), since these are not printer-specific, but typically we'll want different values according to the printer we want to print to.
 
-By default, the script will only fetch printouts that have the Alma printout status `Pending`. Once the printout has been printed, the script changes the status to `Printed`. There is a `Fetch-Jobs` function parameter `-printStatuses` that can be added, which can be used to fetch printouts with other statuses (`Printed`, `Pending`, `Canceled`, `ALL`). For example, `-printStatuses "Canceled"`
+By default, the script will only fetch printouts that have the Alma printout status `Pending`. Once the printout has been printed, the script changes the status to `Printed`. There is a `Fetch-Jobs` function parameter `-printoutsWithStatus` that can be added, which can be used to fetch printouts with other statuses (`Printed`, `Pending`, `Canceled`, `ALL`). For example, `-printoutsWithStatus "Canceled"`
 
 ### Future improvements
 
