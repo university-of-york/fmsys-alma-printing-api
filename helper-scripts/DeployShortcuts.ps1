@@ -1,5 +1,10 @@
 #Requires -RunAsAdministrator
 #Requires -Version 4.0
+<#
+  .SYNOPSIS
+  A script to deploy shortcuts to 'shell:common startup' and 'shell:common desktop' locations.
+  Also creates a new system environment variable to hold the powershell -Command value.
+#>
 $envVariableName = "ALMA_PRINTING_CMD"
 $shortcutFilename = read-host "Please type a shortcut filename (note the Powershell window title will carry this name too)"
 $startup=[Environment]::GetFolderPath("CommonStartup")

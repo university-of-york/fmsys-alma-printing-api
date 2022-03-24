@@ -1,7 +1,24 @@
 #Requires -Version 3.0
+<#
+  .SYNOPSIS
+  Powershell script to facilitate printing of Ex Libris Alma generated printouts
+
+  .DESCRIPTION
+  The two main functions of FetchAlmaPrint.ps1 are to (1) retrieve a list of available Alma printers and (2) query, download and print any pending printouts
+
+  .PARAMETER apiRegion
+  Specifies the API region code. Available codes are:
+    North America = na
+    Europe = eu (default)
+    Asia Pacific = ap
+    Canada = ca
+    China = cn
+
+  .EXAMPLE
+  PS> . .\FetchAlmaPrint.ps1 -apiRegion "na"
+#>
 
 param (
-  # North America = na, Europe = eu (default), Asia Pacific = ap, Canada = ca, China = cn ( . .\FetchAlmaPrint.ps1 -apiRegion "na" )
   [string]$apiRegion = "eu"
 )
 
@@ -12,6 +29,13 @@ $tmpPrintoutsPath = "$PSScriptRoot\tmp_printouts"
 $apiKeysPath = "$PSScriptRoot\auth"
 
 function Invoke-Setup {
+  <#
+  .SYNOPSIS
+  A function to run one time, in order to store the Ex Libris API key to a file for later use, and to ensure the tmp_printouts directory exists for storing the HTML printout files.
+
+  .EXAMPLE
+  PS> . .\FetchAlmaPrint.ps1;Invoke-Setup
+  #>
   "Script setup"
   If ((Test-Path -Path $apiKeysPath) -ne $true) {
       $null = New-Item -Type 'directory' -Path "$apiKeysPath" -Force
@@ -24,6 +48,14 @@ function Invoke-Setup {
 }
 
 function Fetch-Printers {
+  <#
+  .SYNOPSIS
+  Retrieve a list of available Alma printers for use with the Fetch-Jobs function.
+  The printer ID should be saved for later, as this is a required named parameter of the Fetch-Jobs function.
+
+  .EXAMPLE
+  PS> . .\FetchAlmaPrint.ps1;Fetch-Printers
+  #>
   $fetchPrintersApiUrlPath = "/almaws/v1/conf/printers?"
   $fetchPrintersApiUrlParameters = -join ("library=ALL&printout_queue=ALL&name=ALL&code=ALL&limit=100&offset=0")
   $fetchPrintersApiFullUrl = -join ($apiBaseUrl,$fetchPrintersApiUrlPath,$fetchPrintersApiUrlParameters)
@@ -48,7 +80,45 @@ function Fetch-Jobs(
   [string]$marginRight = "0.144440",
   [string]$printStatuses = "PENDING",
   [switch]$jpgBarcode) {
+  <#
+  .SYNOPSIS
+  Query, download and print any printouts according to status.
 
+  .PARAMETER printerId
+  This is the ID of the Alma printer returned by the Fetch-Printers function.
+
+  .PARAMETER localPrinterName
+  This is the name of the physical printer to which the printouts should be sent.
+
+  .PARAMETER checkInterval
+  This is the interval in seconds that defines the frequency of checking for pending printouts.
+
+  .PARAMETER marginTop
+  This is the marginTop value added to the HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\PageSetup key.
+
+  .PARAMETER marginBottom
+  This is the marginBottom value added to the HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\PageSetup key.
+
+  .PARAMETER marginLeft
+  This is the marginLeft value added to the HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\PageSetup key.
+
+  .PARAMETER marginRight
+  This is the marginRight value added to the HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\PageSetup key.
+
+  .PARAMETER printStatuses
+  This determines which of the available statuses of printouts to check for.
+  Valid values are:
+    Pending (default)
+    Printed
+    Canceled
+    ALL
+
+  .PARAMETER jpgBarcode
+  This switch, when used, will replace the base64-encoded PNG barcode data (if found) with base64-encoded JPG data, to ensure it is readable by barcode scanners.
+
+  .EXAMPLE
+  PS> . .\FetchAlmaPrint.ps1;Fetch-Jobs -printerId '14195349480001361' -localPrinterName 'HP Laserjet Pro - Basement' -checkInterval 15 -marginTop '0.3' -marginBottom '0.3' -marginLeft '0.3' -marginRight '0.3' -jpgBarcode
+  #>
   if ($localPrinterName -ne (Get-WmiObject -Class Win32_Printer -Filter "Name='$localPrinterName'").Name) {
     Write-Host "The printer specified was not found" -ForegroundColor red
     return
@@ -134,6 +204,10 @@ function Fetch-Jobs(
 }
 
 function getHeaders {
+  <#
+  .SYNOPSIS
+   A function to return the required HTTP headers for inclusion in Invoke-RestMethod requests.
+  #>
   $apikey = Import-Clixml -Path "$apiKeysPath\apikey.xml"
   return $headers = @{
     'Accept' = 'application/json'
@@ -142,6 +216,12 @@ function getHeaders {
 }
 
 function markAsPrinted ([string]$letterId){
+  <#
+  .SYNOPSIS
+   A function to mark the printed printout with status 'Printed'.
+  .PARAMETER letterId
+  This is the Alma letterId of the printout to be marked as 'Printed'.
+  #>
   $markAsPrintedApiUrlParameters = -join ("letter=ALL&status=ALL&printout_id=",$letterId,"&op=mark_as_printed")
   $markAsPrintedApiFullUrl = -join ($apiBaseUrl,$printoutsApiUrlPath,$markAsPrintedApiUrlParameters)
   Write-Information -MessageData "$(Get-Date -UFormat "%A %d/%m/%Y %T") - marking letter ID $letterId as printed" -InformationAction Continue
@@ -149,15 +229,28 @@ function markAsPrinted ([string]$letterId){
 }
 
 function getDefaultPrinter {
-    $script:originalDefaultPrinter = Get-WmiObject -Query "SELECT * FROM Win32_Printer WHERE Default=$true" | select object -ExpandProperty Name
+  <#
+  .SYNOPSIS
+   A function to get the Windows default printer, and populate a script-level variable with its name.
+  #>
+  $script:originalDefaultPrinter = Get-WmiObject -Query "SELECT * FROM Win32_Printer WHERE Default=$true" | select object -ExpandProperty Name
 }
 
 function setDefaultPrinter ([string]$printerName){
-    $null = (Get-WmiObject -Class Win32_Printer -Filter "Name='$printerName'").SetDefaultPrinter()
+  <#
+  .SYNOPSIS
+   A function to set the Windows default printer.
+   .PARAMETER printerName
+   This is the Windows printer name as listed in System settings > Printers & Scanners.
+  #>
+  $null = (Get-WmiObject -Class Win32_Printer -Filter "Name='$printerName'").SetDefaultPrinter()
 }
 
 function backupPageSetup {
-  # Get PSObject excluding PS properties (this works when the value names collide)
+  <#
+  .SYNOPSIS
+   A function to make a backup of existing Page Setup registry values, for restoration after printing.
+  #>
   Get-Item $RegPath | ForEach-Object {
       $RegKey = $_
       $script:PropertyHash = @{}
@@ -169,8 +262,10 @@ function backupPageSetup {
 }
 
 function setPageSetup ([string]$marginTop, [string]$marginBottom, [string]$marginLeft, [string]$marginRight){
-  # Set the values we need for the print job
-  # "MarginTop is $marginTop, MarginBottom is $MarginBottom, MarginLeft is $MarginLeft, MarginRight is $MarginRight"
+  <#
+  .SYNOPSIS
+  A function to set the Page Setup values according to what is required for printing in the current environment.
+  #>
   Set-ItemProperty -Path $RegPath -Name "margin_bottom" -Value $marginBottom -Type "String"
   Set-ItemProperty -Path $RegPath -Name "margin_top" -Value $marginTop -Type "String"
   Set-ItemProperty -Path $RegPath -Name "margin_left" -Value $marginLeft -Type "String"
@@ -180,6 +275,10 @@ function setPageSetup ([string]$marginTop, [string]$marginBottom, [string]$margi
 }
 
 function resetPageSetup {
+  <#
+  .SYNOPSIS
+  A function to restore the Page Setup values as they were before printing.
+  #>
   # Delete all properties (as these instances of the properties didn't exist before)
   Remove-ItemProperty -Path $RegPath -Name "margin_bottom"
   Remove-ItemProperty -Path $RegPath -Name "margin_top"
@@ -197,6 +296,14 @@ function resetPageSetup {
 }
 
 function base64Png2Jpg ([string]$html){
+  <#
+  .SYNOPSIS
+  A function to replace the base64-encoded PNG barcode data with the equivalent base64-encoded JPG data.
+  This function was created after finding that the barcodes were not readable when embedded in the HTML as base64-encoded PNG data.
+
+  .PARAMETER html
+  This is the HTML data to search and replace.
+  #>
   $pattern = '<td><b>Item Barcode: </b><img src="data:image/.png;base64,([-A-Za-z0-9+/]*={0,3})" alt="Item Barcode"></td>'
   $base64PngMatchString = $html | Select-String -Pattern $pattern | foreach {$_.matches.groups[1]} | select -expandproperty Value
   if ($base64PngMatchString -ne $null) {

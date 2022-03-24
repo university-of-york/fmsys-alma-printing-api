@@ -147,7 +147,6 @@ By default, the script will only fetch printouts that have the Alma printout sta
 
 ### Future improvements
 
-* Document all parameters in this README!
 * Currently, if the script is interrupted while it is `Working..`, say by pressing `CTRL+C`, there's a chance that the original default printer and `Page Setup` settings as mentioned previously won't be restored. It might be possible to improve this by using `Try`,`Catch`,`Finally` [as indicated here](https://stackoverflow.com/a/15788979/1754517).
 * The limitations of using Internet Explorer for printing could be overcome by using a third-party HTML rendering/printing tool [like this one](https://github.com/kendallb/PrintHtml). But sadly, having tested it, it doesn't cope with `Roll Paper 80 x 297 mm` paper size. Another option would be to pay for [Bersoft HTMLPrint](https://www.bersoft.com/htmlprint/), which would very likely work. Moving away from IE is probably a good thing, as the continued availability of its COM object is in some doubt, following the announcement of [IE11's retirement, 15 June 2022](https://techcommunity.microsoft.com/t5/windows-it-pro-blog/internet-explorer-11-desktop-app-retirement-faq/ba-p/2366549).
 * It would also be good to see if this script could be made into a Windows service, perhaps using `srvany` or [NSSM](https://nssm.cc/), instead of invoking the script via shortcuts.
