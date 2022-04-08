@@ -119,6 +119,13 @@ function Fetch-Jobs(
   .EXAMPLE
   PS> . .\FetchAlmaPrint.ps1;Fetch-Jobs -printerId '14195349480001361' -localPrinterName 'HP Laserjet Pro - Basement' -checkInterval 15 -marginTop '0.3' -marginBottom '0.3' -marginLeft '0.3' -marginRight '0.3' -jpgBarcode
   #>
+
+  $instances = (Get-WmiObject Win32_Process | select CommandLine | where {$_ -ilike "*FetchAlmaPrint.ps1*"} | measure).Count
+  if ($instances -ge "2" ) {
+    Write-Host "The script is apparently already running in the background" -ForegroundColor red
+    return
+  }
+
   if ($localPrinterName -ne (Get-WmiObject -Class Win32_Printer -Filter "Name='$localPrinterName'").Name) {
     Write-Host "The printer specified was not found" -ForegroundColor red
     return
