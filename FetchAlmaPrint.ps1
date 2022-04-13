@@ -120,8 +120,9 @@ function Fetch-Jobs(
   PS> . .\FetchAlmaPrint.ps1;Fetch-Jobs -printerId '14195349480001361' -localPrinterName 'HP Laserjet Pro - Basement' -checkInterval 15 -marginTop '0.3' -marginBottom '0.3' -marginLeft '0.3' -marginRight '0.3' -jpgBarcode
   #>
 
-  $instances = (Get-WmiObject Win32_Process | select CommandLine | where {$_ -ilike "*FetchAlmaPrint.ps1*"} | measure).Count
-  if ($instances -ge "2" ) {
+  $scriptName = $(Get-Item $PSCommandPath ).Name
+  $scriptInstances = (Get-WmiObject Win32_Process | select CommandLine | where {$_ -ilike "*${scriptName}*"} | measure).Count
+  if ($scriptInstances -gt 1 ) {
     Write-Host "The script is apparently already running in the background" -ForegroundColor red
     return
   }
