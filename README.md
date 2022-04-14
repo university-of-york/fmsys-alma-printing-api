@@ -89,6 +89,15 @@ Lastly, reboot the PC to check that the script is starting normally.
 - If the script _flashes by_, i.e. errors appear, but the Powershell window closes too quickly to see what caused it, try temporarily adding the `-NoExit` Powershell option to the shortcut target.
 - Note the `Start-Sleep 30;` at the front of the `ALMA_PRINTING_CMD` variable value. It was noted that if the script starts too quickly after logging in, then you might see errors. This ensures a delay before starting the queue checking.
 - If you're wondering why step 8 is required i.e. why we don't embed the command directly in the shortcut, this is because there is a 260 character length limit on shortcuts' `Target` field, and this will very likely be exceeded by including additional parameters.
+- If you need to reduce the `font-size` for a particular printer, you can do this by adjusting the relevant XSL template in Alma. For example, we use the following to reduce the `font-size` when printed to our Epson POS receipt printers:
+```
+<xsl:if test="notification_data/receivers/receiver/printer/code = 'sorter' or notification_data/receivers/receiver/printer/code = 'kings'">
+@media print {
+  tr {font-size: 70%;}
+}
+</xsl:if>
+```
+The printer `code`s, referenced in the conditional statement, are returned when invoking the `Fetch-Printers` function.
 
 #### Barcode unreadable?
 A problem was identified with the readability of the barcodes when printed using the script. The key points about this problem are:
