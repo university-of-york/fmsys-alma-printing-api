@@ -79,7 +79,8 @@ function Fetch-Jobs(
   [string]$marginLeft = "0.155560",
   [string]$marginRight = "0.144440",
   [string]$printoutsWithStatus = "PENDING",
-  [switch]$jpgBarcode) {
+  [switch]$jpgBarcode,
+  [switch]$multiInstanceOverride) {
   <#
   .SYNOPSIS
   Query, download and print any printouts according to status.
@@ -116,15 +117,20 @@ function Fetch-Jobs(
   .PARAMETER jpgBarcode
   This switch, when used, will replace the base64-encoded PNG barcode data (if found) with base64-encoded JPG data, to ensure it is readable by barcode scanners.
 
+  .PARAMETER multiInstanceOverride
+  This switch, when used, will allow multiple instance of the Fetch-Jobs function to run concurrently. Ordinarily this is undesirable because duplicate printouts will be printed.
+
   .EXAMPLE
   PS> . .\FetchAlmaPrint.ps1;Fetch-Jobs -printerId '14195349480001361' -localPrinterName 'HP Laserjet Pro - Basement' -checkInterval 15 -marginTop '0.3' -marginBottom '0.3' -marginLeft '0.3' -marginRight '0.3' -jpgBarcode
   #>
 
-  $scriptName = $(Get-Item $PSCommandPath ).Name
-  $scriptInstances = (Get-WmiObject Win32_Process | select CommandLine | where {$_ -ilike "*${scriptName}*"} | measure).Count
-  if ($scriptInstances -gt 1 ) {
-    Write-Host "The script is apparently already running in the background" -ForegroundColor red
-    return
+  if (-not ($multiInstanceOverride)) {
+    $scriptName = $(Get-Item $PSCommandPath ).Name
+    $scriptInstances = (Get-WmiObject Win32_Process | select CommandLine | where {$_ -ilike "*${scriptName}*"} | measure).Count
+    if ($scriptInstances -gt 1 ) {
+      Write-Host "The script is apparently already running in the background" -ForegroundColor red
+      return
+    }
   }
 
   if ($localPrinterName -ne (Get-WmiObject -Class Win32_Printer -Filter "Name='$localPrinterName'").Name) {
