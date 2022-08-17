@@ -12,7 +12,7 @@ $desktop=[Environment]::GetFolderPath("CommonDesktop")
 $WshShell = New-Object -comObject WScript.Shell
 $Shortcut = $WshShell.CreateShortcut("$desktop\$shortcutFilename.lnk")
 $Shortcut.TargetPath = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
-$Shortcut.Arguments  = "-NoLogo -Command %$envVariableName%"
+$Shortcut.Arguments  = "-NoLogo -NoProfile -Command %$envVariableName%"
 $Shortcut.WorkingDirectory  = $(Get-Item $PSCommandPath ).DirectoryName | Split-Path
 $Shortcut.WindowStyle = 7
 $Shortcut.Save()

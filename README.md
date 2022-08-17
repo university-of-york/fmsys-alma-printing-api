@@ -63,7 +63,7 @@ To create the shortcuts manually, take the following steps:
    1. Right-click the shortcut file, and from the menu left-click `Properties`
    2. In the `Shortcut` tab of the resulting dialogue, edit the following fields:
 
-Target: `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoLogo -Command %ALMA_PRINTING_CMD%`  
+Target: `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoLogo -NoProfile -Command %ALMA_PRINTING_CMD%`  
 Start in: `C:\fmsys-alma-printing-api`  
 Run: `Minimized`  
 
