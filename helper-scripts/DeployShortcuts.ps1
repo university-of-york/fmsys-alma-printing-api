@@ -14,6 +14,7 @@ $Shortcut = $WshShell.CreateShortcut("$desktop\$shortcutFilename.lnk")
 $Shortcut.TargetPath = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 $Shortcut.Arguments  = "-NoLogo -NoProfile -Command %$envVariableName%"
 $Shortcut.WorkingDirectory  = $(Get-Item $PSCommandPath ).DirectoryName | Split-Path
+# Launch in a minimised window
 $Shortcut.WindowStyle = 7
 $Shortcut.Save()
 Copy-Item "$desktop\$shortcutFilename.lnk" -Destination "$startup"
