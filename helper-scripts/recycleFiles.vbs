@@ -42,7 +42,7 @@ Call DeleteFiles(strFolderPath, intDaysOlderThan)
 Sub DeleteFiles(path, days)
   Set objFolder = objFso.GetFolder(path)
   For Each objFile In objFolder.Files
-    If objFile.DateCreated < (Now() - days) and (StrComp(CStr(objFso.GetExtensionName(objFile)), strFileExtension, 1) = 0) Then
+    If objFile.DateCreated < (Now() - days) and (StrComp(objFso.GetExtensionName(objFile), strFileExtension, 1) = 0) Then
       Execute strDeletecommand
     End If
   Next
