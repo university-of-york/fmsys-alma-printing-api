@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
-    <Description>The tmp_printouts directory accumulates HTML files. This scheduled task deletes HTML files in the aforementioned directory that were created 30 days or more ago. The task leverages powershell to filter on creation date, and mshta to hide the task window. IMPORTANT - ensure the WorkingDirectory is set to the correct path of the tmp_printouts directory.</Description>
+    <Description>The tmp_printouts directory accumulates HTML files. This scheduled task recycle HTML files in the aforementioned directory that were created 30 days or more ago. The task runs a VBScript, which leverages the Windows Script Host (`wscript`) to run the task invisibly.</Description>
     <URI>\fmsys-alma-printing-api - clean tmp_printouts directory</URI>
   </RegistrationInfo>
   <Triggers>
@@ -58,8 +58,8 @@
   </Settings>
   <Actions Context="Author">
     <Exec>
-      <Command>C:\Windows\System32\mshta.exe</Command>
-      <Arguments>vbscript:Execute("CreateObject(""Wscript.Shell"").Run ""C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoLogo -NoProfile -Command """"Gci -Filter *.html | Where CreationTime -lt (Get-Date).AddDays(-30) | Del # See https://github.com/university-of-york/fmsys-alma-printing-api#tmp_printouts-housekeeping. Contact jea9 for queries"""""", 0 : window.close")</Arguments>
+      <Command>C:\Windows\System32\wscript.exe</Command>
+      <Arguments>"C:\fmsys-alma-printing-api\helper-scripts\recycleFiles.vbs" /b /nologo /folderpath:"C:\fmsys-alma-printing-api\tmp_printouts" /daysolderthan:"30" /filextension:"html"</Arguments>
       <WorkingDirectory>C:\fmsys-alma-printing-api\tmp_printouts</WorkingDirectory>
     </Exec>
   </Actions>

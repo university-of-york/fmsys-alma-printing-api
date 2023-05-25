@@ -124,7 +124,7 @@ Set-Location helper-scripts
 
 #### tmp_printouts housekeeping
 
-The `tmp_printouts` directory will accumulate many HTML files over time. It's probably a useful contingency having the HTML files persisted to disk in case re-prints are required, or if there is a problem printing the document. However, over time these files may consume a significant amount of disk space, so it's recommended to delete the older ones while keeping the more recent ones. To help automate this housekeeping process, a Task Scheduler XML template is provided which leverages Powershell to delete files older than 30 days. This can be adjusted according to local needs; just edit the XML before importing, or modify the task once imported. See `helper-scripts/fmsys-alma-printing-api - clean tmp_printouts directory.xml`
+The `tmp_printouts` directory will accumulate many HTML files over time. It's probably a useful contingency having the HTML files persisted to disk in case re-prints are required, or if there is a problem printing the document. However, over time these files may consume a significant amount of disk space, so it's recommended to delete or recycle the older ones while keeping the more recent ones. To help automate this housekeeping process, a Task Scheduler XML template and a VBScript file is provided to recycle files older than 30 days. This can be adjusted according to local needs; just edit the XML before importing, or modify the task once imported. See `helper-scripts/fmsys-alma-printing-api - clean tmp_printouts directory.xml` and `helper-scripts/recycleFiles.vbs`.
 
 #### UoY-specific notes
 A list of UoY `ALMA_PRINTING_CMD` variable values is as follows:
