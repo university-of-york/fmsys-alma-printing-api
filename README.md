@@ -59,7 +59,7 @@ To create the shortcuts manually, take the following steps:
    3. In the next screen, give the shortcut a suitable name like `Alma Slip Printing`. Click the `Finish` button
 
 
-2. Now make some modifications to your new shortcut file
+2. Now make some modifications to your new shortcut file:
    1. Right-click the shortcut file, and from the menu left-click `Properties`
    2. In the `Shortcut` tab of the resulting dialogue, edit the following fields:
 
