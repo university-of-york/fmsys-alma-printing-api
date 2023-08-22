@@ -70,7 +70,7 @@ The script `DeployShortcuts.ps1` is available in the `helper-scripts` subdirecto
 2. Type `Set-Location 'C:\fmsys-alma-printing-api\helper-scripts'` (or the path to where the repo is, plus `\helper-scripts`)
 3. Copy the following, editing the `<>` parameter values, and adding any additional required parameters:
 ```
-.\DeployShortcuts.ps1 -Deploy -ShortcutFilename 'Alma Slip Printing' -ShortcutArguments "-NoLogo -NoProfile -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '<printerId>' -localPrinterName '<printerName>' }`""
+.\DeployShortcuts.ps1 -ShortcutFilename 'Alma Slip Printing' -ShortcutArguments "-NoLogo -NoProfile -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '<printerId>' -localPrinterName '<printerName>' }`""
 ```
 4. Paste the resulting line into your Powershell window and press `CR` to run the script
 

@@ -6,13 +6,10 @@
 
   Usage:
   Run in an elevated Powershell window, e.g.:
-  .\DeployShortcuts.ps1 -Deploy -ShortcutFilename 'Alma Interlending Printing' `
+  .\DeployShortcuts.ps1 -ShortcutFilename 'Alma Interlending Printing' `
   -ShortcutArguments "-NoLogo -NoProfile -Command `"& {Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '19195349880001381' -localPrinterName 'PUSH_ITSPRN0705 [Harry Fairhurst - Information Services LFA/ LFA023](Mobility)' -marginTop '0.3' -jpgBarcode}`""
 
   For the -ShortcutArguments parameter, you'll need to escape any double-quotes with backticks.
-
-  .PARAMETER Deploy
-  Add this switch to copy the shortcut to the Common Startup and Common Desktop directories [switch]
 
   .PARAMETER ShortcutFilename
   The filename you want to give the shortcut. Default is 'Alma printing' [string]
@@ -43,9 +40,6 @@ param (
     [Parameter(ParameterSetName="create")]
     [string]$ShortcutWorkingDirectory,
 
-    [Parameter(ParameterSetName="create")]
-    [switch]$Deploy,
-
     [Parameter(ParameterSetName="verify")]
     [switch]$VerifyOnly,
 
@@ -59,14 +53,14 @@ $WshShell = New-Object -comObject WScript.Shell
 
 If (-Not($VerifyOnly)) {
     $shortcutPath = "${env:TMP}\tmp$([convert]::tostring((get-random 65535),16).padleft(4,'0')).lnk"
+}
+Else {
+  If (Test-Path -Path $VerifyFilePath -PathType Leaf) {
+    $shortcutPath = $VerifyFilePath
+  } Else {
+    Throw '-VerifyFilePath does not exist'
   }
-  Else {
-    If (Test-Path -Path $VerifyFilePath -PathType Leaf) {
-      $shortcutPath = $VerifyFilePath
-    } Else {
-      Throw '-VerifyFilePath does not exist'
-    }
-  }
+}
 
 $shortcut = $WshShell.CreateShortcut($shortcutPath)
 
@@ -89,11 +83,9 @@ If (-Not($VerifyOnly)) {
   # Launch in a minimised window
   $shortcut.WindowStyle = 7
   $shortcut.Save()
-}
-
-If ($Deploy) {
   Copy-Item $shortcutPath -Destination "${commonDesktop}\${shortcutFilename}.lnk" -Verbose
   Copy-Item $shortcutPath -Destination "${commonStartup}\${shortcutFilename}.lnk" -Verbose
+  Remove-Item -Path $shortcutPath -Verbose
 }
 
 'For your information, here are the properties of the LNK file:'
@@ -109,7 +101,3 @@ If ($Deploy) {
 "Working Directory: $($shortcut.WorkingDirectory)"
 $shortcut = $null
 $WshShell = $null
-
-If (-Not($VerifyOnly)) {
-  Remove-Item -Path $shortcutPath -Verbose
-}
