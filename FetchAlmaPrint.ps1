@@ -1,4 +1,4 @@
-#Requires -Version 3.0
+#Requires -Version 5.1
 <#
   .SYNOPSIS
   Powershell script to facilitate printing of Ex Libris Alma generated printouts
@@ -126,21 +126,18 @@ function Fetch-Jobs(
 
   if (-not ($multiInstanceOverride)) {
     $scriptName = $(Get-Item $PSCommandPath ).Name
-    $scriptInstances = (Get-WmiObject Win32_Process | select CommandLine | where {$_ -ilike "*${scriptName}*"} | measure).Count
+    $scriptInstances = (Get-CimInstance -ClassName Win32_Process | Select-Object CommandLine | Where-Object {$_ -ilike "*${scriptName}*"} | Measure-Object).Count
     if ($scriptInstances -gt 1 ) {
-      Write-Host "The script is apparently already running in the background" -ForegroundColor red
-      return
+      Throw 'The script is apparently already running in the background'
     }
   }
 
-  if ($localPrinterName -ne (Get-WmiObject -Class Win32_Printer -Filter "Name='$localPrinterName'").Name) {
-    Write-Host "The printer specified was not found" -ForegroundColor red
-    return
+  if ($localPrinterName -ne (Get-CimInstance -ClassName Win32_Printer -Filter "Name='$localPrinterName'").Name) {
+    Throw 'The printer specified was not found'
   }
 
   if (-not (Test-Path "$apiKeysPath\apikey.xml")) {
-    Write-Host "The apikey.xml file doesn't exist" -ForegroundColor red
-    return
+    Throw 'The apikey.xml file doesn''t exist'
   }
 
   # To avoid 'The RPC server is unavailable. (Exception from HRESULT: 0x800706BA)' errors, enable IE Protected Mode for the 'Local Intranet' zone
@@ -163,7 +160,7 @@ function Fetch-Jobs(
     "Checking Online Queue..."
     $letterResponse = (Invoke-RestMethod -Uri $fetchJobsApiFullUrl -Method Get -Headers (getHeaders)).printout
     $defaultPrinterChanged = $false
-    if ($letterResponse -ne $null) {
+    if ($null -ne $letterResponse) {
       # If the specified printer isn't the default printer, make it the default printer
       if ($localPrinterName -ne (getDefaultPrinter)) {
         setDefaultPrinter($localPrinterName)
@@ -202,14 +199,14 @@ function Fetch-Jobs(
     }
 
     # Restore the margins, etc
-    if ($letterResponse -ne $null) {
+    if ($null -ne $letterResponse) {
       restorePageSetup
     }
 
-    "Finished..going to sleep for $checkInterval seconds. Press CTRL+C to quit."
+    "Finished..going to sleep for ${checkInterval} seconds. Press CTRL+C to quit."
      $i = $checkInterval
      do {
-      Write-Host -NoNewline "`rRestarting in $i seconds."
+      Write-Host -NoNewline "`rRestarting in ${i} seconds."
       Start-Sleep -seconds 1
       $i--
     } while ($i -gt 0)
@@ -247,7 +244,7 @@ function getDefaultPrinter {
   .SYNOPSIS
    A function to get the Windows default printer, and populate a script-level variable with its name.
   #>
-  $script:originalDefaultPrinter = Get-WmiObject -Query "SELECT * FROM Win32_Printer WHERE Default=$true" | select object -ExpandProperty Name
+  $script:originalDefaultPrinter = Get-CimInstance -Query "SELECT * FROM Win32_Printer WHERE Default=$true" | Select-Object -ExpandProperty Name
 }
 
 function setDefaultPrinter ([string]$printerName){
@@ -257,7 +254,7 @@ function setDefaultPrinter ([string]$printerName){
    .PARAMETER printerName
    This is the Windows printer name as listed in System settings > Printers & Scanners.
   #>
-  $null = (Get-WmiObject -Class Win32_Printer -Filter "Name='$printerName'").SetDefaultPrinter()
+  $null = (Get-CimInstance -ClassName Win32_Printer -Filter "Name='$printerName'").SetDefaultPrinter()
 }
 
 function backupPageSetup {
@@ -319,8 +316,8 @@ function base64Png2Jpg ([string]$html){
   This is the HTML data to search and replace.
   #>
   $pattern = '<td><b>Item Barcode: </b><img src="data:image/.png;base64,([-A-Za-z0-9+/]*={0,3})" alt="Item Barcode"></td>'
-  $base64PngMatchString = $html | Select-String -Pattern $pattern | foreach {$_.matches.groups[1]} | select -expandproperty Value
-  if ($base64PngMatchString -ne $null) {
+  $base64PngMatchString = $html | Select-String -Pattern $pattern | ForEach-Object {$_.matches.groups[1]} | Select-Object -expandproperty Value
+  if ($null -ne $base64PngMatchString) {
     $oMemoryStream = New-Object -TypeName System.IO.MemoryStream
     $oImgFormat = [System.Drawing.Imaging.ImageFormat]::Jpeg
     $Image = [Drawing.Bitmap]::FromStream([IO.MemoryStream][Convert]::FromBase64String($base64PngMatchString))
