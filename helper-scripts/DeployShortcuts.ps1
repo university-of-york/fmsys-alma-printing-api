@@ -1,4 +1,3 @@
-#Requires -RunAsAdministrator
 #Requires -Version 5.1
 <#
   .SYNOPSIS
@@ -52,6 +51,9 @@ $commonDesktop = [Environment]::GetFolderPath("CommonDesktop")
 $WshShell = New-Object -comObject WScript.Shell
 
 If (-Not($VerifyOnly)) {
+    If (-Not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+      Throw "To deploy shortcuts to 'shell:common startup' and 'shell:common desktop' locations, you need to start this script from an elevated Powershell window"
+    }
     $shortcutPath = "${env:TMP}\tmp$([convert]::tostring((get-random 65535),16).padleft(4,'0')).lnk"
 }
 Else {
