@@ -68,14 +68,18 @@ The script `DeployShortcuts.ps1` is available in the `helper-scripts` subdirecto
 ##### Running `DeployShortcuts.ps1`
 1. Open an elevated Powershell window
 2. Type `Set-Location 'C:\fmsys-alma-printing-api\helper-scripts'` (or the path to where the repo is, plus `\helper-scripts`)
-3. Copy the following, editing the `<>` parameter values, and adding any additional required parameters:
+3. Copy the following, editing the parameter values with `<>` placeholder characters, and adding any additional required parameters:
 ```
 .\DeployShortcuts.ps1 -ShortcutFilename 'Alma Slip Printing' -ShortcutArguments "-NoLogo -NoProfile -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '<printerId>' -localPrinterName '<printerName>' }`""
 ```
 4. Paste the resulting line into your Powershell window and press `CR` to run the script
 
-You can also inspect the script source, to understand the script's other parameters, which when used allow you to check the properties of an existing `.lnk` shortcut file.
-
+The script also allows one to inspect the properties of an existing `.lnk` shortcut file:
+1. Open a Powershell window
+2. Copy the following, editing the `-VerifyFilePath` parameter value if you want inspect a different shortcut:
+```
+.\DeployShortcuts.ps1 -VerifyOnly -VerifyFilePath "C:\Users\Public\Desktop\Alma Printing.lnk"
+```
 See also [UoY-specific notes](#uoy-specific-notes) for a list of UoY `-ShortcutArguments`.
 
 ##### "Legacy", manual steps
@@ -109,7 +113,6 @@ Run: `Minimized`
 #### Deployment Tips & Notes
 
 - Note the `Start-Sleep 30;` at the start of the `-Command` parameter. It was noted that if the script starts too quickly after logging in, then you might see errors. This ensures a delay before starting the queue checking.
-- If the script _flashes by_, i.e. errors appear, but the Powershell window closes too quickly to see what caused it, try temporarily adding the `-NoExit` Powershell option to the shortcut target.
 - If you need to reduce the `font-size` for a particular printer, you can do this by adjusting the relevant XSL template in Alma. For example, we use the following to reduce the `font-size` when printed to our Epson POS receipt printers:
 ```
 <xsl:if test="notification_data/receivers/receiver/printer/code = 'sorter' or notification_data/receivers/receiver/printer/code = 'kings'">
@@ -152,17 +155,17 @@ In relation to creating shortcuts using `.\helper-scripts\DeployShortcuts.ps1`, 
 
 **Interlending receiving**
 ```
-"-NoLogo -NoProfile -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '19195349880001381' -localPrinterName 'PUSH_ITSPRN0705 [Harry Fairhurst - Information Services LFA/ LFA023](Mobility)' -marginTop '0.3' -jpgBarcode }`""
+"-NoLogo -NoProfile -NoExit -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '19195349880001381' -localPrinterName 'PUSH_ITSPRN0705 [Harry Fairhurst - Information Services LFA/ LFA023](Mobility)' -marginTop '0.3' -jpgBarcode }`""
 ```
 
 **JBM Holds processing**
 ```
-"-NoLogo -NoProfile -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '848838010001381' -localPrinterName 'EPSON TM-T88III Receipt' }`""
+"-NoLogo -NoProfile -NoExit -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '848838010001381' -localPrinterName 'EPSON TM-T88III Receipt' }`""
 ```
 
 **KML Holds processing**
 ```
-"-NoLogo -NoProfile -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '993537480001381' -localPrinterName 'EPSON TM-T88III Receipt' }`""
+"-NoLogo -NoProfile -NoExit -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '993537480001381' -localPrinterName 'EPSON TM-T88III Receipt' }`""
 ```
 
 ### Future improvements
