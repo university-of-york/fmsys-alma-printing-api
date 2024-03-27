@@ -254,7 +254,7 @@ function setDefaultPrinter ([string]$printerName){
    .PARAMETER printerName
    This is the Windows printer name as listed in System settings > Printers & Scanners.
   #>
-  $null = (Get-CimInstance -ClassName Win32_Printer -Filter "Name='$printerName'").SetDefaultPrinter()
+  $null = Get-CimInstance -ClassName Win32_Printer -Filter "Name='$printerName'" | Invoke-CimMethod -MethodName SetDefaultPrinter
 }
 
 function backupPageSetup {
