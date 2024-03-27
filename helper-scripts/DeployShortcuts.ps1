@@ -20,11 +20,8 @@
   .PARAMETER ShortcutWorkingDirectory
   The Working Directory a.k.a 'Start in' folder. This defaults to the root directory of this repo [string]
 
-  .PARAMETER VerifyOnly
-  Add this switch to check the LNK field content for an existing shortcut [switch]
-
-  .PARAMETER VerifyFilePath
-  The full file path to the LNK file that you want to verify [string]
+  .PARAMETER ListOnlyFilePath
+  The full file path to a LNK file. Supply this paramater when you want to list an existing LNK file's field names/values [string]
 
 #>
 [CmdletBinding(DefaultParameterSetName = "create")]
@@ -39,34 +36,32 @@ param (
     [Parameter(ParameterSetName="create")]
     [string]$ShortcutWorkingDirectory,
 
-    [Parameter(ParameterSetName="verify")]
-    [switch]$VerifyOnly,
-
-    [Parameter(Mandatory, ParameterSetName="verify")]
-    [string]$VerifyFilePath
+    [Parameter(Mandatory, ParameterSetName="listonly")]
+    [string]$ListOnlyFilePath
 )
 
 $commonStartup = [Environment]::GetFolderPath("CommonStartup")
 $commonDesktop = [Environment]::GetFolderPath("CommonDesktop")
 $WshShell = New-Object -comObject WScript.Shell
 
-If (-Not($VerifyOnly)) {
-    If (-Not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-      Throw "To deploy shortcuts to 'shell:common startup' and 'shell:common desktop' locations, you need to start this script from an elevated Powershell window"
-    }
-    $shortcutPath = "${env:TMP}\tmp$([convert]::tostring((get-random 65535),16).padleft(4,'0')).lnk"
+If ($ShortcutArguments) {
+  If (-Not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Throw "To deploy shortcuts to 'shell:common startup' and 'shell:common desktop' locations, you need to start this script from an elevated Powershell window"
+  }
+  $shortcutPath = "${env:TMP}\tmp$([convert]::tostring((get-random 65535),16).padleft(4,'0')).lnk"
 }
-Else {
-  If (Test-Path -Path $VerifyFilePath -PathType Leaf) {
-    $shortcutPath = $VerifyFilePath
+If ($ListOnlyFilePath) {
+  # This logic path occurs when -ListOnlyFilePath is specified
+  If (Test-Path -Path $ListOnlyFilePath -PathType Leaf) {
+    $shortcutPath = $ListOnlyFilePath
   } Else {
-    Throw '-VerifyFilePath does not exist'
+    Throw "-ListOnlyFilePath ${ListOnlyFilePath} does not exist"
   }
 }
 
 $shortcut = $WshShell.CreateShortcut($shortcutPath)
 
-If (-Not($VerifyOnly)) {
+If ($ShortcutArguments) {
   # Windows auto-strips double-quotes from unspaced file paths, as well as auto-adding the full path to a given executable when just the filename is supplied
   # See https://stackoverflow.com/questions/31815286/creating-quoted-path-for-shortcut-with-arguments-in-powershell
   $shortcut.TargetPath = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
@@ -79,7 +74,7 @@ If (-Not($VerifyOnly)) {
     If (Test-Path $ShortcutWorkingDirectory -PathType Container) {
       $shortcut.WorkingDirectory  = $ShortcutWorkingDirectory
     } Else {
-      Throw 'Working directory does not exist'
+      Throw "-ShortcutWorkingDirectory ${ShortcutWorkingDirectory} does not exist"
     }
   }
   # Launch in a minimised window

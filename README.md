@@ -76,9 +76,9 @@ The script `DeployShortcuts.ps1` is available in the `helper-scripts` subdirecto
 
 The script also allows one to inspect the properties of an existing `.lnk` shortcut file:
 1. Open a Powershell window
-2. Copy the following, editing the `-VerifyFilePath` parameter value if you want inspect a different shortcut:
+2. Copy the following, editing the `-ListOnlyFilePath` parameter value if you want inspect a different shortcut:
 ```
-.\DeployShortcuts.ps1 -VerifyOnly -VerifyFilePath "C:\Users\Public\Desktop\Alma Printing.lnk"
+.\DeployShortcuts.ps1 -ListOnlyFilePath "C:\Users\Public\Desktop\Alma Printing.lnk"
 ```
 See also [UoY-specific notes](#uoy-specific-notes) for a list of UoY `-ShortcutArguments`.
 
