@@ -316,7 +316,7 @@ function base64Png2Jpg ([string]$html){
   This is the HTML data to search and replace.
   #>
   $pattern = '<td><b>Item Barcode: </b><img src="data:image/.png;base64,([-A-Za-z0-9+/]*={0,3})" alt="Item Barcode"></td>'
-  $base64PngMatchString = $html | Select-String -Pattern $pattern | ForEach-Object {$_.matches.groups[1]} | Select-Object -expandproperty Value
+  $base64PngMatchString = $html | Select-String -Pattern $pattern | ForEach-Object {$_.matches.groups[1]} | Select-Object -ExpandProperty Value
   if ($null -ne $base64PngMatchString) {
     $oMemoryStream = New-Object -TypeName System.IO.MemoryStream
     $oImgFormat = [System.Drawing.Imaging.ImageFormat]::Jpeg
