@@ -155,7 +155,7 @@ In relation to creating shortcuts using `.\helper-scripts\DeployShortcuts.ps1`, 
 
 **Interlending receiving**
 ```
-"-NoLogo -NoProfile -NoExit -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '19195349880001381' -localPrinterName 'PUSH_ITSPRN0705 [Harry Fairhurst - Information Services LFA/ LFA023](Mobility)' -marginTop '0.3' -jpgBarcode }`""
+"-NoLogo -NoProfile -NoExit -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '19195349880001381' -localPrinterName 'EPSON TM-T88III Receipt' }`""
 ```
 
 **JBM Holds processing**
