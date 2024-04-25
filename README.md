@@ -163,6 +163,11 @@ In relation to creating shortcuts using `.\helper-scripts\DeployShortcuts.ps1`, 
 "-NoLogo -NoProfile -NoExit -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '848838010001381' -localPrinterName 'EPSON TM-T88III Receipt' }`""
 ```
 
+**JBM Transit Slips**
+```
+"-NoLogo -NoProfile -NoExit -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '18009202260001381' -localPrinterName 'EPSON TM-T88III Receipt' }`""
+```
+
 **KML Holds processing**
 ```
 "-NoLogo -NoProfile -NoExit -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '993537480001381' -localPrinterName 'EPSON TM-T88III Receipt' }`""
