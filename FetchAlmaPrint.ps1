@@ -71,7 +71,7 @@ function Fetch-Printers {
 }
 
 function Fetch-Jobs(
-  [parameter(mandatory)] [string]$printerId,
+  [parameter(mandatory)] [string[]]$printerId,
   [string]$localPrinterName = "EPSON TM-T88III Receipt",
   [int]$checkInterval = 30,
   [string]$marginTop = "0.000000",
@@ -86,7 +86,7 @@ function Fetch-Jobs(
   Query, download and print any printouts according to status.
 
   .PARAMETER printerId
-  This is the ID of the Alma printer returned by the Fetch-Printers function.
+  This is the ID of the Alma printer returned by the Fetch-Printers function. Multiple IDs can be specified, in which case you'll need to comma delimit these.
 
   .PARAMETER localPrinterName
   This is the name of the physical printer to which the printouts should be sent.
@@ -150,15 +150,20 @@ function Fetch-Jobs(
     Set-ItemProperty -Path $protectedModeKeyPath -Name $protectedModeValueName -Value $protectedModeValueData
   }
 
-  $fetchJobsApiUrlParameters = -join ("letter=ALL&status=",$printoutsWithStatus,"&printer_id=",$printerId)
-  $fetchJobsApiFullUrl = -join ($apiBaseUrl,$printoutsApiUrlPath,$fetchJobsApiUrlParameters)
+  ForEach($id in $printerId) {
+    $fetchJobsApiUrlParameters = -join ("letter=ALL&status=",$printoutsWithStatus,"&printer_id=",$id)
+    [string[]]$fetchJobsApiFullUrl += -join ($apiBaseUrl,$printoutsApiUrlPath,$fetchJobsApiUrlParameters)
+  }
+
   "Beginning at $(Get-Date -UFormat "%A %d/%m/%Y %T")"
   $script:RegPath = "HKCU:\Software\Microsoft\Internet Explorer\PageSetup"
   backupPageSetup
 
   while ($true) {
     "Checking Online Queue..."
-    $letterResponse = (Invoke-RestMethod -Uri $fetchJobsApiFullUrl -Method Get -Headers (getHeaders)).printout
+    ForEach($url in $fetchJobsApiFullUrl) {
+      $letterResponse = (Invoke-RestMethod -Uri $url -Method Get -Headers (getHeaders)).printout
+
     $defaultPrinterChanged = $false
     if ($null -ne $letterResponse) {
       # If the specified printer isn't the default printer, make it the default printer
@@ -202,6 +207,7 @@ function Fetch-Jobs(
     if ($null -ne $letterResponse) {
       restorePageSetup
     }
+  }
 
     "Finished..going to sleep for ${checkInterval} seconds. Press CTRL+C to quit."
      $i = $checkInterval
