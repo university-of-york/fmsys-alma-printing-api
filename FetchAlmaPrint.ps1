@@ -19,12 +19,12 @@
 #>
 
 param (
-  [string]$apiRegion = "eu"
+  [string]$apiRegion = 'eu'
 )
 
-add-type -assemblyname system.drawing
-$apiBaseUrl = -join ("https://api-",$apiRegion,".hosted.exlibrisgroup.com")
-$printoutsApiUrlPath = "/almaws/v1/task-lists/printouts?"
+Add-Type -AssemblyName system.drawing
+$apiBaseUrl = -join ('https://api-', $apiRegion, '.hosted.exlibrisgroup.com')
+$printoutsApiUrlPath = '/almaws/v1/task-lists/printouts?'
 $tmpPrintoutsPath = "$PSScriptRoot\tmp_printouts"
 $apiKeysPath = "$PSScriptRoot\auth"
 
@@ -36,14 +36,14 @@ function Invoke-Setup {
   .EXAMPLE
   PS> . .\FetchAlmaPrint.ps1;Invoke-Setup
   #>
-  "Script setup"
+  'Script setup'
   If ((Test-Path -Path $apiKeysPath) -ne $true) {
-      $null = New-Item -Type 'directory' -Path "$apiKeysPath" -Force
+    $null = New-Item -Type 'directory' -Path "$apiKeysPath" -Force
   }
-  $apikey = read-host "Enter the Ex Libris Alma API key"
-  $apikey | export-clixml -Path "$apiKeysPath\apikey.xml" -Force
+  $apikey = Read-Host 'Enter the Ex Libris Alma API key'
+  $apikey | Export-Clixml -Path "$apiKeysPath\apikey.xml" -Force
   If ((Test-Path -Path $tmpPrintoutsPath) -ne $true) {
-      $null = New-Item -Type 'directory' -Path $tmpPrintoutsPath -Force
+    $null = New-Item -Type 'directory' -Path $tmpPrintoutsPath -Force
   }
 }
 
@@ -56,29 +56,29 @@ function Fetch-Printers {
   .EXAMPLE
   PS> . .\FetchAlmaPrint.ps1;Fetch-Printers
   #>
-  $fetchPrintersApiUrlPath = "/almaws/v1/conf/printers?"
-  $fetchPrintersApiUrlParameters = -join ("library=ALL&printout_queue=ALL&name=ALL&code=ALL&limit=100&offset=0")
-  $fetchPrintersApiFullUrl = -join ($apiBaseUrl,$fetchPrintersApiUrlPath,$fetchPrintersApiUrlParameters)
+  $fetchPrintersApiUrlPath = '/almaws/v1/conf/printers?'
+  $fetchPrintersApiUrlParameters = -join ('library=ALL&printout_queue=ALL&name=ALL&code=ALL&limit=100&offset=0')
+  $fetchPrintersApiFullUrl = -join ($apiBaseUrl, $fetchPrintersApiUrlPath, $fetchPrintersApiUrlParameters)
   # Use grouping operator per https://education.launchcode.org/azure/chapters/powershell-intro/cmdlet-invoke-restmethod.html#grouping-to-access-fields-of-the-json-response
   (Invoke-RestMethod -Uri $fetchPrintersApiFullUrl -Method Get -Headers (getHeaders)).printer | Format-Table `
-  @{N='ID';E={ $_.id };width=20}, `
-  @{N='Code';E={ $_.code };width=10}, `
-  @{N='Name';E={ $_.name };width=30}, `
-  @{N='Description';E={$_.description};width=40}, `
-  @{N='Email';E={ $_.email };width=25}, `
-  @{N='Queue';E={ $_.printout_queue };width=5}, `
-  @{N='Library';E={ $_.library.desc };width=30}
+  @{N = 'ID'; E = { $_.id }; width = 20 }, `
+  @{N = 'Code'; E = { $_.code }; width = 10 }, `
+  @{N = 'Name'; E = { $_.name }; width = 30 }, `
+  @{N = 'Description'; E = { $_.description }; width = 40 }, `
+  @{N = 'Email'; E = { $_.email }; width = 25 }, `
+  @{N = 'Queue'; E = { $_.printout_queue }; width = 5 }, `
+  @{N = 'Library'; E = { $_.library.desc }; width = 30 }
 }
 
 function Fetch-Jobs(
   [parameter(mandatory)] [string[]]$printerId,
-  [string]$localPrinterName = "EPSON TM-T88III Receipt",
+  [string]$localPrinterName = 'EPSON TM-T88III Receipt',
   [int]$checkInterval = 30,
-  [string]$marginTop = "0.000000",
-  [string]$marginBottom = "0.000000",
-  [string]$marginLeft = "0.155560",
-  [string]$marginRight = "0.144440",
-  [string]$printoutsWithStatus = "PENDING",
+  [string]$marginTop = '0.000000',
+  [string]$marginBottom = '0.000000',
+  [string]$marginLeft = '0.155560',
+  [string]$marginRight = '0.144440',
+  [string]$printoutsWithStatus = 'PENDING',
   [switch]$jpgBarcode,
   [switch]$multiInstanceOverride) {
   <#
@@ -126,7 +126,7 @@ function Fetch-Jobs(
 
   if (-not ($multiInstanceOverride)) {
     $scriptName = $(Get-Item $PSCommandPath ).Name
-    $scriptInstances = (Get-CimInstance -ClassName Win32_Process | Select-Object CommandLine | Where-Object {$_ -ilike "*${scriptName}*"} | Measure-Object).Count
+    $scriptInstances = (Get-CimInstance -ClassName Win32_Process | Select-Object CommandLine | Where-Object { $_ -ilike "*${scriptName}*" } | Measure-Object).Count
     if ($scriptInstances -gt 1 ) {
       Throw 'The script is apparently already running in the background'
     }
@@ -150,73 +150,74 @@ function Fetch-Jobs(
     Set-ItemProperty -Path $protectedModeKeyPath -Name $protectedModeValueName -Value $protectedModeValueData
   }
 
-  ForEach($id in $printerId) {
-    $fetchJobsApiUrlParameters = -join ("letter=ALL&status=",$printoutsWithStatus,"&printer_id=",$id)
-    [string[]]$fetchJobsApiFullUrl += -join ($apiBaseUrl,$printoutsApiUrlPath,$fetchJobsApiUrlParameters)
+  ForEach ($id in $printerId) {
+    $fetchJobsApiUrlParameters = -join ('letter=ALL&status=', $printoutsWithStatus, '&printer_id=', $id)
+    [string[]]$fetchJobsApiFullUrl += -join ($apiBaseUrl, $printoutsApiUrlPath, $fetchJobsApiUrlParameters)
   }
 
-  "Beginning at $(Get-Date -UFormat "%A %d/%m/%Y %T")"
-  $script:RegPath = "HKCU:\Software\Microsoft\Internet Explorer\PageSetup"
+  "Beginning at $(Get-Date -UFormat '%A %d/%m/%Y %T')"
+  $script:RegPath = 'HKCU:\Software\Microsoft\Internet Explorer\PageSetup'
   backupPageSetup
 
   while ($true) {
-    "Checking Online Queue..."
-    ForEach($url in $fetchJobsApiFullUrl) {
+    'Checking Online Queue...'
+    ForEach ($url in $fetchJobsApiFullUrl) {
       $letterResponse = (Invoke-RestMethod -Uri $url -Method Get -Headers (getHeaders)).printout
 
-    $defaultPrinterChanged = $false
-    if ($null -ne $letterResponse) {
-      # If the specified printer isn't the default printer, make it the default printer
-      if ($localPrinterName -ne (getDefaultPrinter)) {
-        setDefaultPrinter($localPrinterName)
-        $defaultPrinterChanged = $true
+      $defaultPrinterChanged = $false
+      if ($null -ne $letterResponse) {
+        # If the specified printer isn't the default printer, make it the default printer
+        if ($localPrinterName -ne (getDefaultPrinter)) {
+          setDefaultPrinter($localPrinterName)
+          $defaultPrinterChanged = $true
+        }
+        # Do Page Setup stuff
+        setPageSetup $marginTop $marginBottom $marginLeft $marginRight
       }
-      # Do Page Setup stuff
-      setPageSetup $marginTop $marginBottom $marginLeft $marginRight
-    }
 
-    ForEach($letter in $letterResponse) {
-      $ie = new-object -com "InternetExplorer.Application"
-      $letterId = $letter.id
-      if ($jpgBarcode) {
-        $letterHtml = base64Png2Jpg $letter.letter
-      } else {
-        $letterHtml = $letter.letter
+      ForEach ($letter in $letterResponse) {
+        $ie = New-Object -com 'InternetExplorer.Application'
+        $letterId = $letter.id
+        if ($jpgBarcode) {
+          $letterHtml = base64Png2Jpg $letter.letter
+        }
+        else {
+          $letterHtml = $letter.letter
+        }
+        $outputFilename = -Join ('document-', $letterId, '.html')
+        $printOut = -Join ($tmpPrintoutsPath, '\', $outputFilename)
+        # Ridiculous hack to get around "The RPC server is unavailable. (Exception from HRESULT: 0x800706BA)" - see https://stackoverflow.com/a/721519/1754517
+        "<!-- saved from url=(0016)http://localhost -->`r`n" + $letterHtml | Out-File -Encoding utf8 -FilePath "$printOut"
+        # Begin printing
+        $ie.Navigate($printOut)
+        Start-Sleep -Seconds 3
+        "$(Get-Date -UFormat '%A %d/%m/%Y %T') - printing $outputFilename"
+        $ie.ExecWB(6, 2)
+        Start-Sleep -Seconds 3
+        $ie.quit()
+        # Done
+        markAsPrinted $letterId
       }
-      $outputFilename = -Join ("document-",$letterId,".html")
-      $printOut = -Join ($tmpPrintoutsPath,'\',$outputFilename)
-      # Ridiculous hack to get around "The RPC server is unavailable. (Exception from HRESULT: 0x800706BA)" - see https://stackoverflow.com/a/721519/1754517
-      "<!-- saved from url=(0016)http://localhost -->`r`n" + $letterHtml | Out-File -Encoding utf8 -FilePath "$printOut"
-      # Begin printing
-      $ie.Navigate($printOut)
-      Start-Sleep -seconds 3
-      "$(Get-Date -UFormat "%A %d/%m/%Y %T") - printing $outputFilename"
-      $ie.ExecWB(6,2)
-      Start-Sleep -seconds 3
-      $ie.quit()
-      # Done
-      markAsPrinted $letterId
-    }
 
-    # Restore the original default printer
-    if ($defaultPrinterChanged -eq $true) {
-      setDefaultPrinter($originalDefaultPrinter)
-    }
+      # Restore the original default printer
+      if ($defaultPrinterChanged -eq $true) {
+        setDefaultPrinter($originalDefaultPrinter)
+      }
 
-    # Restore the margins, etc
-    if ($null -ne $letterResponse) {
-      restorePageSetup
+      # Restore the margins, etc
+      if ($null -ne $letterResponse) {
+        restorePageSetup
+      }
     }
-  }
 
     "Finished..going to sleep for ${checkInterval} seconds. Press CTRL+C to quit."
-     $i = $checkInterval
-     do {
+    $i = $checkInterval
+    do {
       Write-Host -NoNewline "`rRestarting in ${i} seconds."
-      Start-Sleep -seconds 1
+      Start-Sleep -Seconds 1
       $i--
     } while ($i -gt 0)
-    ""
+    ''
   }
 }
 
@@ -227,21 +228,21 @@ function getHeaders {
   #>
   $apikey = Import-Clixml -Path "$apiKeysPath\apikey.xml"
   return $headers = @{
-    'Accept' = 'application/json'
+    'Accept'        = 'application/json'
     'Authorization' = "apikey $apikey"
-    }
+  }
 }
 
-function markAsPrinted ([string]$letterId){
+function markAsPrinted ([string]$letterId) {
   <#
   .SYNOPSIS
    A function to mark the printed printout with status 'Printed'.
   .PARAMETER letterId
   This is the Alma letterId of the printout to be marked as 'Printed'.
   #>
-  $markAsPrintedApiUrlParameters = -join ("letter=ALL&status=ALL&printout_id=",$letterId,"&op=mark_as_printed")
-  $markAsPrintedApiFullUrl = -join ($apiBaseUrl,$printoutsApiUrlPath,$markAsPrintedApiUrlParameters)
-  Write-Information -MessageData "$(Get-Date -UFormat "%A %d/%m/%Y %T") - marking letter ID $letterId as printed" -InformationAction Continue
+  $markAsPrintedApiUrlParameters = -join ('letter=ALL&status=ALL&printout_id=', $letterId, '&op=mark_as_printed')
+  $markAsPrintedApiFullUrl = -join ($apiBaseUrl, $printoutsApiUrlPath, $markAsPrintedApiUrlParameters)
+  Write-Information -MessageData "$(Get-Date -UFormat '%A %d/%m/%Y %T') - marking letter ID $letterId as printed" -InformationAction Continue
   $null = Invoke-RestMethod -Uri $markAsPrintedApiFullUrl -Method Post -Headers (getHeaders)
 }
 
@@ -253,7 +254,7 @@ function getDefaultPrinter {
   $script:originalDefaultPrinter = Get-CimInstance -Query "SELECT * FROM Win32_Printer WHERE Default=$true" | Select-Object -ExpandProperty Name
 }
 
-function setDefaultPrinter ([string]$printerName){
+function setDefaultPrinter ([string]$printerName) {
   <#
   .SYNOPSIS
    A function to set the Windows default printer.
@@ -269,26 +270,26 @@ function backupPageSetup {
    A function to make a backup of existing Page Setup registry values, for restoration after printing.
   #>
   Get-Item $RegPath | ForEach-Object {
-      $RegKey = $_
-      $script:PropertyHash = @{}
-      $_.GetValueNames() -replace "^$", "(default)" | ForEach-Object {
-          $script:PropertyHash.$_ = $RegKey.GetValue($_)
-      }
-      $null = New-Object PSObject -Property $script:PropertyHash
+    $RegKey = $_
+    $script:PropertyHash = @{}
+    $_.GetValueNames() -replace '^$', '(default)' | ForEach-Object {
+      $script:PropertyHash.$_ = $RegKey.GetValue($_)
+    }
+    $null = New-Object PSObject -Property $script:PropertyHash
   }
 }
 
-function setPageSetup ([string]$marginTop, [string]$marginBottom, [string]$marginLeft, [string]$marginRight){
+function setPageSetup ([string]$marginTop, [string]$marginBottom, [string]$marginLeft, [string]$marginRight) {
   <#
   .SYNOPSIS
   A function to set the Page Setup values according to what is required for printing in the current environment.
   #>
-  Set-ItemProperty -Path $RegPath -Name "margin_bottom" -Value $marginBottom -Type "String"
-  Set-ItemProperty -Path $RegPath -Name "margin_top" -Value $marginTop -Type "String"
-  Set-ItemProperty -Path $RegPath -Name "margin_left" -Value $marginLeft -Type "String"
-  Set-ItemProperty -Path $RegPath -Name "margin_right" -Value $marginRight -Type "String"
-  Set-ItemProperty -Path $RegPath -Name "header" -Value "" -Type "String"
-  Set-ItemProperty -Path $RegPath -Name "footer" -Value "" -Type "String"
+  Set-ItemProperty -Path $RegPath -Name 'margin_bottom' -Value $marginBottom -Type 'String'
+  Set-ItemProperty -Path $RegPath -Name 'margin_top' -Value $marginTop -Type 'String'
+  Set-ItemProperty -Path $RegPath -Name 'margin_left' -Value $marginLeft -Type 'String'
+  Set-ItemProperty -Path $RegPath -Name 'margin_right' -Value $marginRight -Type 'String'
+  Set-ItemProperty -Path $RegPath -Name 'header' -Value '' -Type 'String'
+  Set-ItemProperty -Path $RegPath -Name 'footer' -Value '' -Type 'String'
 }
 
 function restorePageSetup {
@@ -297,22 +298,22 @@ function restorePageSetup {
   A function to restore the Page Setup values as they were before printing.
   #>
   # Delete all properties (as these instances of the properties didn't exist before)
-  Remove-ItemProperty -Path $RegPath -Name "margin_bottom"
-  Remove-ItemProperty -Path $RegPath -Name "margin_top"
-  Remove-ItemProperty -Path $RegPath -Name "margin_left"
-  Remove-ItemProperty -Path $RegPath -Name "margin_right"
-  Remove-ItemProperty -Path $RegPath -Name "header"
-  Remove-ItemProperty -Path $RegPath -Name "footer"
+  Remove-ItemProperty -Path $RegPath -Name 'margin_bottom'
+  Remove-ItemProperty -Path $RegPath -Name 'margin_top'
+  Remove-ItemProperty -Path $RegPath -Name 'margin_left'
+  Remove-ItemProperty -Path $RegPath -Name 'margin_right'
+  Remove-ItemProperty -Path $RegPath -Name 'header'
+  Remove-ItemProperty -Path $RegPath -Name 'footer'
 
   if ($PropertyHash.Count -gt 0 ) {
     # Restore properties to what they were before
     $PropertyHash.GetEnumerator() | ForEach-Object {
-        Set-ItemProperty -Path $RegPath -Name $_.key -Value $_.value -Type "String"
+      Set-ItemProperty -Path $RegPath -Name $_.key -Value $_.value -Type 'String'
     }
   }
 }
 
-function base64Png2Jpg ([string]$html){
+function base64Png2Jpg ([string]$html) {
   <#
   .SYNOPSIS
   A function to replace the base64-encoded PNG barcode data with the equivalent base64-encoded JPG data.
@@ -323,18 +324,19 @@ function base64Png2Jpg ([string]$html){
   #>
 
   $pattern = '<img src="(data:image/\.png;base64,([A-Za-z0-9-+/]*={0,3}))" alt="Item Barcode">'
-  $srcAttribute = Select-String -InputObject $html -Pattern $pattern | ForEach-Object {$_.matches.groups[1]} | Select-Object -ExpandProperty Value
-  $base64PngMatchString = Select-String -InputObject $html -Pattern $pattern | ForEach-Object {$_.matches.groups[2]} | Select-Object -ExpandProperty Value
+  $srcAttribute = Select-String -InputObject $html -Pattern $pattern | ForEach-Object { $_.matches.groups[1] } | Select-Object -ExpandProperty Value
+  $base64PngMatchString = Select-String -InputObject $html -Pattern $pattern | ForEach-Object { $_.matches.groups[2] } | Select-Object -ExpandProperty Value
 
   If ($null -ne $srcAttribute -and $null -ne $base64PngMatchString) {
     $oMemoryStream = New-Object -TypeName System.IO.MemoryStream
     $oImgFormat = [System.Drawing.Imaging.ImageFormat]::Jpeg
     $Image = [Drawing.Bitmap]::FromStream([IO.MemoryStream][Convert]::FromBase64String($base64PngMatchString))
-    $Image.Save($oMemoryStream,$oImgFormat)
+    $Image.Save($oMemoryStream, $oImgFormat)
     $cImgBytes = [Byte[]]($oMemoryStream.ToArray())
     $sBase64 = [System.Convert]::ToBase64String($cImgBytes)
-    Return $html.replace($srcAttribute,'data:image/.jpg;base64,' + $sBase64)
-  } Else {
+    Return $html.replace($srcAttribute, 'data:image/.jpg;base64,' + $sBase64)
+  }
+  Else {
     Return $html
   }
 }
