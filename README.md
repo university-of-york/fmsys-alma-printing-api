@@ -134,6 +134,11 @@ A problem was identified with the readability of the barcodes when printed using
 
 To provide a solution for this problem, a new `base64Png2Jpg` function was added which converts the base64 PNG data to base64 JPG. This can be used by adding the `Fetch-Jobs` function switch parameter `-jpgBarcode`.
 
+Alternatively, another solution is to modify the XSL template associated with the printout so that — instead of including the barcode as an image — the barcode is included as text formatted with an installed barcode font such as [this one](https://www.idautomation.com/free-barcode-products/code39-font/). Example XSL snippet:
+```
+<p style="font-family: IDAutomationHC39M; font-size: medium;">(<xsl:value-of select="notification_data/phys_item_display/barcode"/>)</p>
+```
+
 #### IE First-Run
 
 Because the script relies upon Internet Explorer for rendering & printing the HTML, it is likely you'll see the following first-run box:
