@@ -163,7 +163,7 @@ In relation to creating shortcuts using `.\helper-scripts\DeployShortcuts.ps1`, 
 "-NoLogo -NoProfile -NoExit -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '848838010001381' -localPrinterName 'EPSON TM-T88III Receipt' }`""
 ```
 
-**JBM Transit Slips**
+**JBM Customer Services & Off-site Store Slips**
 ```
 "-NoLogo -NoProfile -NoExit -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '18009202260001381','19594501280001381','31949435460001381' -localPrinterName 'EPSON TM-T88III Receipt' }`""
 ```
