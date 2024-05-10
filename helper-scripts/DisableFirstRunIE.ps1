@@ -9,11 +9,11 @@ $valueName = 'DisableFirstRunCustomize'
 $valueData = 1
 $valueEval = (Get-ItemProperty -Path $keyPath -ErrorAction SilentlyContinue).$valueName
 if (!(Test-Path $keyPath)) {
-  "Creating subkey(s)"
+  'Creating subkey(s)'
   $null = New-Item $keyPath -Force
 }
 if ($valueEval -ne $valueData) {
   "Creating $valueName with value $valueData"
   Set-ItemProperty -Path $keyPath -Name $valueName -Value $valueData
 }
-"Done"
+'Done'
