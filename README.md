@@ -63,11 +63,11 @@ What follows is the setup required to start `Fetch-Jobs` automatically upon logo
 ### How should I deploy the script for non-technical staff to use?
 In a so-called production environment, it is recommended that two identical script shortcut (`.lnk`) files be created. These should be put in the `shell:startup` (`C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp`) and `shell:desktop` (`C:\Users\Public\Desktop`) directories. The shortcut in `shell:startup` ensures the script runs automatically upon logon, and the shortcut in `shell:desktop` provides an option to manually invoke the script, if the Powershell window was accidentally closed. The `.lnk` files will ensure that the script will run minimised, so as to run discretely in the background, lessening the chance of an operator accidentally closing the window.
 
-The script `DeployShortcuts.ps1` is available in the `helper-scripts` subdirectory, to make it easier to create and deploy the `.lnk` shortcut files. It is <ins>highly recommended</ins> to create the shortcuts using this script, because of File Explorer's 260 character limit in respect of viewing and editing shortcut properties' `Target` field. This limit will very likely be exceeded when including additional parameters, and in some environments with e.g. very long printer names, which need to be included as parameter values.
+The script `DeployShortcuts.ps1` is available in the `setup-scripts` subdirectory, to make it easier to create and deploy the `.lnk` shortcut files. It is <ins>highly recommended</ins> to create the shortcuts using this script, because of File Explorer's 260 character limit in respect of viewing and editing shortcut properties' `Target` field. This limit will very likely be exceeded when including additional parameters, and in some environments with e.g. very long printer names, which need to be included as parameter values.
 
 ##### Running `DeployShortcuts.ps1`
 1. Open an elevated Powershell window
-2. Type `Set-Location 'C:\fmsys-alma-printing-api\helper-scripts'` (or the path to where the repo is, plus `\helper-scripts`)
+2. Type `Set-Location 'C:\fmsys-alma-printing-api\setup-scripts'` (or the path to where the repo is, plus `\setup-scripts`)
 3. Copy the following, editing the parameter values with `<>` placeholder characters, and adding any additional required parameters:
 ```
 .\DeployShortcuts.ps1 -ShortcutFilename 'Alma Slip Printing' -ShortcutArguments "-NoLogo -NoProfile -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '<printerId>' -localPrinterName '<printerName>' }`""
@@ -145,18 +145,18 @@ Because the script relies upon Internet Explorer for rendering & printing the HT
 
 ![An image of the Internet Explorer 11 first-run box](./images/IE11_First_Run_Image.png?raw=true)
 
-To prevent this box from reappearing, a helper script is provided. Perform the following one-time step in an elevated Powershell window:
+To prevent this box from reappearing, a setup script is provided. Perform the following one-time step in an elevated Powershell window:
 ```
-Set-Location 'C:\fmsys-alma-printing-api\helper-scripts'
+Set-Location 'C:\fmsys-alma-printing-api\setup-scripts'
 .\DisableFirstRunIE.ps1
 ```
 
 #### tmp_printouts housekeeping
 
-The `tmp_printouts` directory will accumulate many HTML files over time. It's probably a useful contingency having the HTML files persisted to disk in case re-prints are required, or if there is a problem printing the document. However, over time these files may consume a significant amount of disk space, so it's recommended to delete or recycle the older ones while keeping the more recent ones. To help automate this housekeeping process, a Task Scheduler XML template and a VBScript file is provided to recycle files older than 30 days. This can be adjusted according to local needs; just edit the XML before importing, or modify the task once imported. See `helper-scripts/fmsys-alma-printing-api - clean tmp_printouts directory.xml` and `helper-scripts/recycleFiles.vbs`. This is implemented in VBS for the simple reason that it's not possible to run scripts completely invisibly in Powershell; `powershell.exe` has `-WindowStyle 'Hidden'` but this is only processed after the Powershell window has appeared.
+The `tmp_printouts` directory will accumulate many HTML files over time. It's probably a useful contingency having the HTML files persisted to disk in case re-prints are required, or if there is a problem printing the document. However, over time these files may consume a significant amount of disk space, so it's recommended to delete or recycle the older ones while keeping the more recent ones. To help automate this housekeeping process, a Task Scheduler XML template and a Powershell script is provided to recycle files older than 30 days. This can be adjusted according to local needs; just edit the XML before importing, or modify the task once imported. See `maintenance-scripts\fmsys-alma-printing-api - clean tmp_printouts directory.xml` and `maintenance-scripts\recycleFiles.ps1`. Note that `maintenance-scripts\silent.vbs` exists to run the Powershell script completely invisibly; `powershell.exe` has `-WindowStyle 'Hidden'` but this is only processed after the Powershell window has appeared.
 
 #### UoY-specific notes
-In relation to creating shortcuts using `.\helper-scripts\DeployShortcuts.ps1`, here is a list of UoY `-ShortcutArguments` parameter values to conveniently copy/paste:
+In relation to creating shortcuts using `.\setup-scripts\DeployShortcuts.ps1`, here is a list of UoY `-ShortcutArguments` parameter values to conveniently copy/paste:
 
 **Interlending receiving**
 ```
