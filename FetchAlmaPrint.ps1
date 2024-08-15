@@ -227,7 +227,7 @@ function getHeaders {
    A function to return the required HTTP headers for inclusion in Invoke-RestMethod requests.
   #>
   $apikey = Import-Clixml -Path "$apiKeysPath\apikey.xml"
-  return $headers = @{
+  return @{
     'Accept'        = 'application/json'
     'Authorization' = "apikey $apikey"
   }
