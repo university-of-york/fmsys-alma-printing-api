@@ -19,7 +19,7 @@ The Powershell script contained in this repository polls the Alma print queue fo
 
 The intention is that the script runs in the background, with its window minimised to the taskbar by default. If something goes wrong then the taskbar icon can be clicked to show the above window.
 
-![An image of the the taskbar icon](./images/alma_printing_taskbar_screenshot.png?raw=true)
+![An image of the taskbar icon](./images/alma_printing_taskbar_screenshot.png?raw=true)
 
 ### Prerequisites
 There are tasks that need to be done in the Alma web UI Configuration area, so that the Alma printer is available as an online queue, which are [explained here](https://knowledge.exlibrisgroup.com/Alma/Product_Documentation/010Alma_Online_Help_(English)/030Fulfillment/080Configuring_Fulfillment/020Fulfillment_Infrastructure/Configuring_Printers). For the purposes of running this script you will need to [get an API key](https://developers.exlibrisgroup.com/blog/how-to-set-up-and-use-the-alma-print-daemon/) to use.
