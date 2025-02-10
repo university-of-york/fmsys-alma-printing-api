@@ -186,3 +186,7 @@ In relation to creating shortcuts using `.\setup-scripts\DeployShortcuts.ps1`, h
 * To protect against a possible API endpoint security compromise, it would be a good idea to sanitise the HTML letter content before "opening" it, as is effectively done with `$ie.Navigate($printOut)`. The idea would be that this would protect against e.g. malicious `<script></script>` code from running, if the perpetrator managed to inject this into the HTML. Thought needs to be given to the most suitable & effective way to do this, be it via the Internet Explorer zone-based security controls in `Internet options`, using an allow-list of HTML tags akin to [htmlpurifier](http://htmlpurifier.org), or some other method.
 * Currently named parameters are specified on the command line. A nice improvement might be to store these parameters in a settings XML file so that they do not need to be passed on every invocation of the script.
 * Corrections should ideally be made so that the script falls into line with the [Powershell Style Guide](https://github.com/PoshCode/PowerShellPracticeAndStyle).
+
+### Repository visibility
+
+This GitHub repository is intentionally public, so that members of the Ex Libris Alma community may benefit from the script.
