@@ -40,7 +40,9 @@ function Invoke-Setup {
   If ((Test-Path -Path $apiKeysPath) -ne $true) {
     $null = New-Item -Type 'directory' -Path "$apiKeysPath" -Force
   }
-  $apikey = Read-Host 'Enter the Ex Libris Alma API key'
+  While ([string]::IsNullOrEmpty($apikey)) {
+    $apikey = Read-Host -Prompt 'Enter the Ex Libris Alma API key'
+  }
   $apikey | Export-Clixml -Path "$apiKeysPath\apikey.xml" -Force
   If ((Test-Path -Path $tmpPrintoutsPath) -ne $true) {
     $null = New-Item -Type 'directory' -Path $tmpPrintoutsPath -Force
