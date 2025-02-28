@@ -59,7 +59,7 @@
   <Actions Context="Author">
     <Exec>
       <Command>C:\Windows\System32\wscript.exe</Command>
-      <Arguments>//B silent.vbs C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoLogo -NoProfile -ExecutionPolicy ByPass -File "recycleFiles.ps1" -FolderPath "C:\fmsys-alma-printing-api\tmp_printouts" -DaysOlderThan 365 -FileExtension "html"</Arguments>
+      <Arguments>//B silent.vbs C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoLogo -NoProfile -ExecutionPolicy ByPass -File "recycleFiles.ps1" -FolderPath "C:\fmsys-alma-printing-api\tmp_printouts" -DaysOlderThan 30 -FileExtension "html"</Arguments>
       <WorkingDirectory>C:\fmsys-alma-printing-api\maintenance-scripts</WorkingDirectory>
     </Exec>
   </Actions>
