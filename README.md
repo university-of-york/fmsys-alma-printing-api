@@ -95,7 +95,6 @@ The `DeployShortcuts.ps1` script also allows for the inspection of the propertie
 ```
 <hr>
 </details>
-
 <details>
 <summary><h4 style="display:inline-block">"Legacy", manual deployment steps (click to expand)</h4></summary>
 These are included here "<i>just in case</i>".<br>
