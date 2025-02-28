@@ -79,6 +79,7 @@ The script `DeployShortcuts.ps1` is available in the `setup-scripts` subdirector
 .\DeployShortcuts.ps1 -ShortcutFilename 'Alma Slip Printing' -ShortcutArguments "-NoLogo -NoProfile -Command `"& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '<printerId>' -localPrinterName '<printerName>' }`""
 ```
 4. Paste the resulting line into your Powershell window and press `CR` to run the script
+<br><br>
 
 > For a list of UoY-specific `-ShortcutArguments` see the wiki page `FMSYS: Library - LMS printing`
 
