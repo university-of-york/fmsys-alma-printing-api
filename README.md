@@ -39,14 +39,18 @@ By default, the script will only fetch printouts that have the Alma printout sta
 ### Prerequisites
 There are tasks that need to be done in the Alma web UI Configuration area, so that the Alma printer is available as an online queue, which are [explained here](https://knowledge.exlibrisgroup.com/Alma/Product_Documentation/010Alma_Online_Help_(English)/030Fulfillment/080Configuring_Fulfillment/020Fulfillment_Infrastructure/Configuring_Printers). For the purposes of running this script you will need to [get an API key](https://developers.exlibrisgroup.com/blog/how-to-set-up-and-use-the-alma-print-daemon/) to use.
 
-### How do I use the script?
+### How should I deploy the script for non-technical staff to use?
 
-Once you have an API key, you'll want to make it available for the script to use:
+Clone this repository to the machine you want to run it on, and open an elevated Powershell window.
+
+Once you have a suitable Alma API key, you'll want to make it available for the script to use:
 ```
 Set-Location <script-dir>
 . .\FetchAlmaPrint.ps1;Invoke-Setup
 ```
 After running the above commands, you will be prompted to enter your API key, which you can paste in. This is then stored in an XML file for future use by the script.
+
+> For UoY deployments, skip down to the [Setup steps for starting Fetch-Jobs automatically](Setup-steps-for-starting-Fetch-Jobs-automatically)
 
 The second thing you'll want to do is determine the Alma print queue to monitor:
 
@@ -63,7 +67,7 @@ The second thing you'll want to do is determine the Alma print queue to monitor:
 ```
 In a production environment, it is the `Fetch-Jobs` function that will run in the background, polling for and printing new print jobs as they are generated at the back-end.
 
-### How should I deploy the script for non-technical staff to use?
+### Setup steps for starting Fetch-Jobs automatically
 
 What follows is the setup required to start `Fetch-Jobs` automatically upon logon, and a desktop shortcut for the operator to re-launch the script if something untoward happens and the running instance needs to be restarted.
 
@@ -72,6 +76,7 @@ In a production environment, it is recommended that two identical script shortcu
 The script `DeployShortcuts.ps1` is available in the `setup-scripts` subdirectory, to make it easier to create and deploy the `.lnk` shortcut files. It is <ins>highly recommended</ins> to create the shortcuts using this script, because of File Explorer's 260 character limit in respect of viewing and editing shortcut properties' `Target` field. This limit will very likely be exceeded when including additional parameters, and in some environments with e.g. very long printer names, which need to be included as parameter values.
 
 ##### Running `DeployShortcuts.ps1`
+> For a list of UoY-specific command lines for creating shortcuts, see the wiki page `FMSYS: Library - LMS printing`
 1. Open an elevated Powershell window
 2. Type `Set-Location 'C:\fmsys-alma-printing-api\setup-scripts'` (or the path to where the repo is, plus `\setup-scripts`)
 3. Copy the following, editing the parameter values with `<>` placeholder characters, and adding any additional required parameters:
@@ -80,8 +85,6 @@ The script `DeployShortcuts.ps1` is available in the `setup-scripts` subdirector
 ```
 4. Paste the resulting line into your Powershell window and press `CR` to run the script
 <br><br>
-
-> For a list of UoY-specific `-ShortcutArguments` see the wiki page `FMSYS: Library - LMS printing`
 
 <details>
 <summary><h4 style="display:inline-block">Inspecting the properties of an existing `.lnk` shortcut file (click to expand)</h4></summary>
