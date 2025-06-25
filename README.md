@@ -50,7 +50,7 @@ Set-Location <script-dir>
 ```
 After running the above commands, you will be prompted to enter your API key, which you can paste in. This is then stored in an XML file for future use by the script.
 
-> For UoY deployments, you can skip the next two steps and jump to [Setup steps for starting Fetch-Jobs automatically](#setup-steps-for-starting-fetch-jobs-automatically)
+> For UoY deployments, skip the next two steps and jump to [Setup steps for starting Fetch-Jobs automatically](#setup-steps-for-starting-fetch-jobs-automatically)
 
 The second thing you'll want to do is determine the Alma print queue to monitor:
 
