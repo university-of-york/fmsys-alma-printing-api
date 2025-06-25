@@ -40,10 +40,12 @@ function Invoke-Setup {
   If ((Test-Path -Path $apiKeysPath) -ne $true) {
     $null = New-Item -Type 'directory' -Path "$apiKeysPath" -Force
   }
-  While ([string]::IsNullOrEmpty($apikey)) {
-    $apikey = Read-Host -Prompt 'Enter the Ex Libris Alma API key'
+  While ($null -eq $apikey -or $apikey.Length -eq 0) {
+    $apikey = Read-Host -AsSecureString -Prompt 'Enter the Ex Libris Alma API key'
   }
-  $apikey | Export-Clixml -Path "$apiKeysPath\apikey.xml" -Force
+  $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($apikey)
+  $plainApikey = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+  $plainApikey | Export-Clixml -Path "$apiKeysPath\apikey.xml" -Force
   If ((Test-Path -Path $tmpPrintoutsPath) -ne $true) {
     $null = New-Item -Type 'directory' -Path $tmpPrintoutsPath -Force
   }
