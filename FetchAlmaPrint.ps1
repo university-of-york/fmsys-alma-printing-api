@@ -334,8 +334,11 @@ function base64Png2Jpg ([string]$html) {
   If ($null -ne $srcAttribute -and $null -ne $base64PngMatchString) {
     $oMemoryStream = New-Object -TypeName System.IO.MemoryStream
     $oImgFormat = [System.Drawing.Imaging.ImageFormat]::Jpeg
-    $Image = [Drawing.Bitmap]::FromStream([IO.MemoryStream][Convert]::FromBase64String($base64PngMatchString))
+    $pngBytes = [System.Convert]::FromBase64String($base64PngMatchString)
+    $pngMemoryStream = New-Object -TypeName System.IO.MemoryStream -ArgumentList (,$pngBytes)
+    $Image = [System.Drawing.Bitmap]::FromStream($pngMemoryStream)
     $Image.Save($oMemoryStream, $oImgFormat)
+    $pngMemoryStream.Dispose()
     $cImgBytes = [Byte[]]($oMemoryStream.ToArray())
     $sBase64 = [System.Convert]::ToBase64String($cImgBytes)
     Return $html.replace($srcAttribute, 'data:image/.jpg;base64,' + $sBase64)
