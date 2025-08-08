@@ -119,8 +119,8 @@ Target:
 ```
 C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoLogo -NoProfile -Command "& { Start-Sleep 30;. .\FetchAlmaPrint.ps1;Fetch-Jobs -checkInterval 15 -printerId '<printerId>' -localPrinterName '<printerName>' }"
 ```
-Start in: `C:\fmsys-alma-printing-api`  
-Run: `Minimized`  
+Start in: `C:\fmsys-alma-printing-api`
+Run: `Minimized`
 
 3. Click the `OK` button to save these changes.
 4. In the Windows `Run` app, enter `shell:common startup`. Explorer will open the startup directory.
