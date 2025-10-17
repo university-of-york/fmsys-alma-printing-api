@@ -99,16 +99,16 @@ function Fetch-Jobs(
   This is the interval in seconds that defines the frequency of checking for pending printouts.
 
   .PARAMETER marginTop
-  This is the marginTop value added to the HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\PageSetup key.
+  This is the marginTop value which sets HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\PageSetup → margin_top. The value's unit of measurement is inches, which differs from IE's Page Setup dialogue which is in millimetres.
 
   .PARAMETER marginBottom
-  This is the marginBottom value added to the HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\PageSetup key.
+  This is the marginBottom value which sets HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\PageSetup → margin_bottom. The value's unit of measurement is inches, which differs from IE's Page Setup dialogue which is in millimetres.
 
   .PARAMETER marginLeft
-  This is the marginLeft value added to the HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\PageSetup key.
+  This is the marginLeft value which sets HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\PageSetup → margin_left. The value's unit of measurement is inches, which differs from IE's Page Setup dialogue which is in millimetres.
 
   .PARAMETER marginRight
-  This is the marginRight value added to the HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\PageSetup key.
+  This is the marginRight value which sets HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\PageSetup → margin_right. The value's unit of measurement is inches, which differs from IE's Page Setup dialogue which is in millimetres.
 
   .PARAMETER printoutsWithStatus
   This determines which of the available statuses of printouts to check for.
