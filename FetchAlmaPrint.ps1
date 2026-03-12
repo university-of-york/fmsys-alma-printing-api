@@ -46,6 +46,7 @@ function Invoke-Setup {
   $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($apikey)
   $plainApikey = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
   $plainApikey | Export-Clixml -Path "$apiKeysPath\apikey.xml" -Force
+  Remove-Variable -Name plainApikey -ErrorAction SilentlyContinue
   If ((Test-Path -Path $tmpPrintoutsPath) -ne $true) {
     $null = New-Item -Type 'directory' -Path $tmpPrintoutsPath -Force
   }
@@ -230,10 +231,15 @@ function getHeaders {
   .SYNOPSIS
    A function to return the required HTTP headers for inclusion in Invoke-RestMethod requests.
   #>
-  $apikey = Import-Clixml -Path "$apiKeysPath\apikey.xml"
-  return @{
-    'Accept'        = 'application/json'
-    'Authorization' = "apikey $apikey"
+  Try {
+    $apikey = Import-Clixml -Path "$apiKeysPath\apikey.xml"
+    return @{
+      'Accept'        = 'application/json'
+      'Authorization' = "apikey $apikey"
+    }
+  }
+  Finally {
+    Remove-Variable -Name apikey -ErrorAction SilentlyContinue
   }
 }
 
