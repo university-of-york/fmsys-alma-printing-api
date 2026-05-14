@@ -1,4 +1,3 @@
-#Requires -Version 5.1
 <#
   .SYNOPSIS
   A script to deploy shortcuts to 'shell:common startup' and 'shell:common desktop' filesystem locations.
@@ -24,6 +23,8 @@
   The full file path to a LNK file. Supply this paramater when you want to list an existing LNK file's field names/values [string]
 
 #>
+#Requires -Version 5.1
+#Requires -RunAsAdministrator
 [CmdletBinding(DefaultParameterSetName = 'create')]
 param (
   # The Powershell window title will carry the $ShortcutFilename too
@@ -85,7 +86,23 @@ If ($ShortcutArguments) {
   $shortcut.Save()
   Copy-Item $shortcutPath -Destination "${commonDesktop}\${shortcutFilename}.lnk" -Verbose
   Copy-Item $shortcutPath -Destination "${commonStartup}\${shortcutFilename}.lnk" -Verbose
-  Remove-Item -Path $shortcutPath -Verbose
+  $maxRetries = 5
+  $retryDelaySeconds = 5
+  For ($i = 1; $i -le $maxRetries; $i++) {
+      Try {
+          Remove-Item -Path $shortcutPath -Verbose -Force -ErrorAction Stop -ErrorVariable copyError
+          Clear-Variable -Name copyError
+          Return $true
+      }
+      Catch {
+          "An error occurred on copy attempt ${i}: $_"
+          "Retrying in ${retryDelaySeconds} seconds..."
+          Start-Sleep -Seconds $retryDelaySeconds
+      }
+  }
+  If ($copyError) {
+    "Remove failure: ${maxRetries} attempts to remove ${shortcutPath}. Aborting."
+  }
 }
 
 'For your information, here are the properties of the LNK file:'
