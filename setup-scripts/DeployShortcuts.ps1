@@ -89,16 +89,16 @@ If ($ShortcutArguments) {
   $maxRetries = 5
   $retryDelaySeconds = 5
   For ($i = 1; $i -le $maxRetries; $i++) {
-      Try {
-          Remove-Item -Path $shortcutPath -Verbose -Force -ErrorAction Stop -ErrorVariable copyError
-          Clear-Variable -Name copyError
-          Return $true
-      }
-      Catch {
-          "An error occurred on copy attempt ${i}: $_"
-          "Retrying in ${retryDelaySeconds} seconds..."
-          Start-Sleep -Seconds $retryDelaySeconds
-      }
+    Try {
+      Remove-Item -Path $shortcutPath -Verbose -Force -ErrorAction Stop -ErrorVariable copyError
+      Clear-Variable -Name copyError
+      Return $true
+    }
+    Catch {
+      "An error occurred on copy attempt ${i}: $_"
+      "Retrying in ${retryDelaySeconds} seconds..."
+      Start-Sleep -Seconds $retryDelaySeconds
+    }
   }
   If ($copyError) {
     "Remove failure: ${maxRetries} attempts to remove ${shortcutPath}. Aborting."
