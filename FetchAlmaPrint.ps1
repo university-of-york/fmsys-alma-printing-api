@@ -44,7 +44,8 @@ function Invoke-Setup {
     $apikey = Read-Host -AsSecureString -Prompt 'Enter the Ex Libris Alma API key'
   }
   $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($apikey)
-  $plainApikey = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+  $plainApikey = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
+  [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
   $plainApikey | Export-Clixml -Path "$apiKeysPath\apikey.xml" -Force
   Remove-Variable -Name plainApikey -ErrorAction SilentlyContinue
   If ((Test-Path -Path $tmpPrintoutsPath) -ne $true) {
